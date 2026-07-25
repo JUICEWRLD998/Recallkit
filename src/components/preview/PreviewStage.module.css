@@ -1,0 +1,35 @@
+.widthControls {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.widthButton {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  padding: 0;
+}
+
+.widthButton:focus-visible {
+  outline: 3px solid rgb(0 124 120 / 35%);
+  outline-offset: -2px;
+}
+
+.active {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .widthButton {
+    transition: none;
+  }
+}

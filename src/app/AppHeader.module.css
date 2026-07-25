@@ -1,0 +1,94 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 0 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+}
+
+.mark {
+  width: 40px;
+  height: 40px;
+  background: var(--ink);
+  color: var(--surface);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.brandName {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--ink);
+  background: var(--surface);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn:hover {
+  background: var(--paper);
+  border-color: var(--muted);
+}
+
+.btnLabel {
+  display: inline;
+}
+
+@media (max-width: 620px) {
+  .header {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .btnLabel {
+    display: none;
+  }
+
+  .btn {
+    padding: 0 10px;
+  }
+
+  .brandName {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+}

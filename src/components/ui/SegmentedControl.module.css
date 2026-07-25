@@ -1,0 +1,28 @@
+.container {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--paper);
+}
+
+.button {
+  height: 36px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.button:focus-visible {
+  outline: 3px solid rgb(0 124 120 / 35%);
+  outline-offset: -2px;
+}
+
+.active {
+  background: var(--ink);
+  color: var(--surface);
+}

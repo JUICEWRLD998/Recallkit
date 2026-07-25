@@ -1,0 +1,32 @@
+.textarea {
+  min-height: 88px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  resize: vertical;
+  width: 100%;
+}
+
+.textarea::placeholder {
+  color: var(--muted);
+}
+
+.textarea:focus {
+  border-color: var(--safe);
+}
+
+.textarea:focus-visible {
+  outline: 3px solid rgb(0 124 120 / 35%);
+  outline-offset: 2px;
+}
+
+.error {
+  border-color: var(--critical);
+}
+
+.error:focus {
+  border-color: var(--critical);
+}
