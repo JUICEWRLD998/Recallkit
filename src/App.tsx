@@ -1,202 +1,162 @@
-import { useMemo, useState } from 'react'
-import './App.css'
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react'
+import { renderToHtml, renderToJson } from '@unlayer/react-elements'
+import type { Dispatch } from 'react'
+import type { RecallAction } from './domain/recall-reducer'
+import { recallReducer } from './domain/recall-reducer'
+import { loadIncident, saveIncident, clearIncident } from './lib/persistence'
 import { downloadText, printHtml } from './lib/export'
-import {
-  createSpikeArtifacts,
-  type SpikeArtifact,
-  type SpikeOutput,
-} from './templates/spike'
+import { sampleIncident } from './data/sample-incident'
+import { AppShell } from './app/AppShell'
+import { AppHeader } from './app/AppHeader'
+import { OutputTabs } from './app/OutputTabs'
+import { EditorPanel } from './components/editor'
+import { PreviewStage } from './components/preview'
+import { ConfirmDialog } from './components/ui'
+import { CustomerRecallEmail } from './templates'
+import { RetailerActionBulletin } from './templates'
+import { PublicRecallNotice } from './templates'
+import './App.css'
 
-const OUTPUTS: Array<{
-  id: SpikeOutput
-  label: string
-  detail: string
-}> = [
-  {
-    id: 'email',
-    label: 'Customer email',
-    detail: 'Email-safe table output',
-  },
-  {
-    id: 'document',
-    label: 'Retail bulletin',
-    detail: 'Print-optimized document',
-  },
-  {
-    id: 'page',
-    label: 'Public notice',
-    detail: 'Responsive web output',
-  },
-]
-
-function formatBytes(value: number) {
-  return new Intl.NumberFormat('en', {
-    notation: value > 9999 ? 'compact' : 'standard',
-    maximumFractionDigits: 1,
-  }).format(value)
-}
-
-function getStatusLabel(status: string) {
-  if (status === 'downloaded') return 'Export created'
-  if (status === 'printing') return 'Print view opened'
-  return 'Renderers ready'
-}
-
-function getInitialOutput(): SpikeOutput {
-  const requestedOutput = new URLSearchParams(window.location.search).get(
-    'output',
-  )
-
-  if (
-    requestedOutput === 'email' ||
-    requestedOutput === 'document' ||
-    requestedOutput === 'page'
-  ) {
-    return requestedOutput
-  }
-
-  return 'email'
-}
+type ActiveOutput = 'email' | 'document' | 'page'
+type SaveStatus = 'saved' | 'unsaved' | 'error'
 
 function App() {
-  const artifacts = useMemo(createSpikeArtifacts, [])
-  const [activeOutput, setActiveOutput] =
-    useState<SpikeOutput>(getInitialOutput)
-  const [actionStatus, setActionStatus] = useState('ready')
-  const activeArtifact: SpikeArtifact = artifacts[activeOutput]
+  const [incident, baseDispatch] = useReducer(recallReducer, undefined, loadIncident)
+  const [status, setStatus] = useState<SaveStatus>('saved')
+  const [activeOutput, setActiveOutput] = useState<ActiveOutput>('email')
+  const [resetDialogOpen, setResetDialogOpen] = useState(false)
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
 
-  const downloadHtml = () => {
-    downloadText(activeArtifact.html, activeArtifact.htmlFilename, 'text/html')
-    setActionStatus('downloaded')
-  }
+  const dispatch: Dispatch<RecallAction> = useCallback((action: RecallAction) => {
+    baseDispatch(action)
+    if (action.type !== 'RESET') {
+      setStatus('unsaved')
+    }
+  }, [])
 
-  const downloadJson = () => {
-    downloadText(
-      JSON.stringify(activeArtifact.json, null, 2),
-      activeArtifact.jsonFilename,
-      'application/json',
-    )
-    setActionStatus('downloaded')
-  }
+  useEffect(() => {
+    if (status !== 'unsaved') return
 
-  const printDocument = () => {
-    printHtml(artifacts.document.html)
-    setActionStatus('printing')
-  }
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
+    }
+
+    saveTimerRef.current = setTimeout(() => {
+      try {
+        saveIncident(incident)
+        setStatus('saved')
+      } catch {
+        setStatus('error')
+      }
+    }, 300)
+
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current)
+      }
+    }
+  }, [incident, status])
+
+  const currentHtml = useMemo(() => {
+    switch (activeOutput) {
+      case 'email':
+        return renderToHtml(<CustomerRecallEmail incident={incident} />, { title: 'Customer Recall Email' })
+      case 'document':
+        return renderToHtml(<RetailerActionBulletin incident={incident} />, { title: 'Retailer Action Bulletin' })
+      case 'page':
+        return renderToHtml(<PublicRecallNotice incident={incident} />, { title: 'Public Recall Notice' })
+    }
+  }, [incident, activeOutput])
+
+  const documentHtml = useMemo(
+    () => renderToHtml(<RetailerActionBulletin incident={incident} />, { title: 'Retailer Action Bulletin' }),
+    [incident],
+  )
+
+  const currentTitle = useMemo(() => {
+    switch (activeOutput) {
+      case 'email':
+        return 'Customer Recall Email'
+      case 'document':
+        return 'Retailer Action Bulletin'
+      case 'page':
+        return 'Public Recall Notice'
+    }
+  }, [activeOutput])
+
+  const handleExportHtml = useCallback(() => {
+    downloadText(currentHtml, `recallkit-${activeOutput}-${incident.id}.html`, 'text/html')
+  }, [currentHtml, activeOutput, incident.id])
+
+  const handleExportJson = useCallback(() => {
+    let json
+    switch (activeOutput) {
+      case 'email':
+        json = renderToJson(<CustomerRecallEmail incident={incident} />)
+        break
+      case 'document':
+        json = renderToJson(<RetailerActionBulletin incident={incident} />)
+        break
+      case 'page':
+        json = renderToJson(<PublicRecallNotice incident={incident} />)
+        break
+    }
+    downloadText(JSON.stringify(json, null, 2), `recallkit-${activeOutput}-${incident.id}.json`, 'application/json')
+  }, [activeOutput, incident])
+
+  const handleExportCase = useCallback(() => {
+    downloadText(JSON.stringify(incident, null, 2), `recallkit-case-${incident.id}.json`, 'application/json')
+  }, [incident])
+
+  const handlePrint = useCallback(() => {
+    printHtml(documentHtml)
+  }, [documentHtml])
+
+  const handleResetConfirm = useCallback(() => {
+    dispatch({ type: 'RESET', incident: sampleIncident })
+    clearIncident()
+    setStatus('saved')
+    setResetDialogOpen(false)
+  }, [dispatch])
 
   return (
-    <main className="app-shell">
-      <header className="app-header">
-        <div className="brand-lockup">
-          <span className="brand-mark" aria-hidden="true">
-            RK
-          </span>
-          <div>
-            <p className="eyebrow">Elements API spike</p>
-            <h1>RecallKit</h1>
-          </div>
-        </div>
-
-        <div className="verification-status" role="status">
-          <span className="status-dot" aria-hidden="true" />
-          <span>{getStatusLabel(actionStatus)}</span>
-        </div>
-      </header>
-
-      <section className="workspace" aria-label="Elements renderer verification">
-        <aside className="output-rail">
-          <div className="rail-heading">
-            <p className="eyebrow">Phase 0</p>
-            <h2>Three render modes</h2>
-            <p>
-              Each preview is generated from a strict Elements root and shown
-              as its final standalone HTML.
-            </p>
-          </div>
-
-          <nav className="output-list" aria-label="Generated outputs">
-            {OUTPUTS.map((output) => (
-              <button
-                aria-pressed={activeOutput === output.id}
-                className="output-option"
-                key={output.id}
-                onClick={() => setActiveOutput(output.id)}
-                type="button"
-              >
-                <span className="output-option-copy">
-                  <strong>{output.label}</strong>
-                  <span>{output.detail}</span>
-                </span>
-                <span className="output-state" aria-hidden="true">
-                  {activeOutput === output.id ? 'Viewing' : 'Ready'}
-                </span>
-              </button>
-            ))}
-          </nav>
-
-          <dl className="artifact-metrics">
-            <div>
-              <dt>HTML</dt>
-              <dd>{formatBytes(activeArtifact.html.length)} bytes</dd>
-            </div>
-            <div>
-              <dt>Rows</dt>
-              <dd>{activeArtifact.json.body.rows.length}</dd>
-            </div>
-            <div>
-              <dt>Schema</dt>
-              <dd>{activeArtifact.json.schemaVersion}</dd>
-            </div>
-          </dl>
-        </aside>
-
-        <section className="preview-stage">
-          <div className="preview-toolbar">
-            <div>
-              <p className="eyebrow">Live artifact</p>
-              <h2>{activeArtifact.label}</h2>
-            </div>
-
-            <div className="preview-actions">
-              <button
-                className="secondary-action"
-                onClick={downloadJson}
-                type="button"
-              >
-                Download JSON
-              </button>
-              <button
-                className="secondary-action"
-                onClick={downloadHtml}
-                type="button"
-              >
-                Download HTML
-              </button>
-              {activeOutput === 'document' && (
-                <button
-                  className="primary-action"
-                  onClick={printDocument}
-                  type="button"
-                >
-                  Print document
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div
-            className={`preview-frame preview-frame--${activeOutput}`}
-            data-testid="preview-frame"
-          >
-            <iframe
-              key={activeOutput}
-              srcDoc={activeArtifact.html}
-              title={`${activeArtifact.label} generated HTML preview`}
-            />
-          </div>
-        </section>
-      </section>
-    </main>
+    <>
+      <AppShell
+        header={
+          <AppHeader
+            status={status}
+            onReset={() => setResetDialogOpen(true)}
+            onExportHtml={handleExportHtml}
+            onExportJson={handleExportJson}
+            onExportCase={handleExportCase}
+            onPrint={handlePrint}
+            activeOutput={activeOutput}
+          />
+        }
+        sidebar={
+          <>
+            <OutputTabs activeOutput={activeOutput} onChange={setActiveOutput} />
+            <EditorPanel incident={incident} dispatch={dispatch} />
+          </>
+        }
+        preview={
+          <PreviewStage
+            html={currentHtml}
+            title={currentTitle}
+            activeOutput={activeOutput}
+          />
+        }
+      />
+      <ConfirmDialog
+        open={resetDialogOpen}
+        title="Reset incident data"
+        message="This will discard all changes and restore the sample incident. This cannot be undone."
+        confirmLabel="Reset"
+        onConfirm={handleResetConfirm}
+        onCancel={() => setResetDialogOpen(false)}
+        destructive
+      />
+    </>
   )
 }
 
