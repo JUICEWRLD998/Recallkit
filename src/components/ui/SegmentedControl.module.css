@@ -1,28 +1,88 @@
 .container {
-  display: inline-flex;
-  border: 1px solid var(--line);
+  display: flex;
+  border: 1px solid var(--line-strong);
   border-radius: 6px;
   overflow: hidden;
   background: var(--paper);
+  width: 100%;
 }
 
 .button {
-  height: 36px;
-  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 1;
+  height: 34px;
+  padding: 0 8px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 560;
   border: none;
   background: transparent;
   cursor: pointer;
+  color: var(--muted);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.button + .button {
+  border-left: 1px solid var(--line);
+}
+
+.button:hover {
   color: var(--ink);
 }
 
 .button:focus-visible {
-  outline: 3px solid rgb(0 124 120 / 35%);
-  outline-offset: -2px;
+  outline: 3px solid rgb(0 124 120 / 30%);
+  outline-offset: -3px;
 }
 
 .active {
   background: var(--ink);
   color: var(--surface);
+}
+
+.active + .button {
+  border-left-color: transparent;
+}
+
+.toneDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--line-strong);
+}
+
+.toneCritical .toneDot {
+  background: var(--critical);
+}
+
+.toneWarning .toneDot {
+  background: var(--warning);
+}
+
+.toneSafe .toneDot {
+  background: var(--safe);
+}
+
+.toneNeutral .toneDot {
+  background: var(--muted);
+}
+
+.active.toneCritical .toneDot,
+.active.toneWarning .toneDot,
+.active.toneSafe .toneDot,
+.active.toneNeutral .toneDot {
+  outline: 2px solid rgb(255 255 255 / 35%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
 }

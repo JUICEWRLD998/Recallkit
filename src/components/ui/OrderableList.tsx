@@ -31,7 +31,7 @@ export function OrderableList({
             onChange={(e) => onUpdate(index, e.target.value)}
             placeholder={placeholder}
           />
-          <div className={styles.reorderGroup}>
+          <div className={styles.controls}>
             <button
               type="button"
               className={styles.reorderButton}
@@ -50,15 +50,15 @@ export function OrderableList({
             >
               <ChevronDown size={16} />
             </button>
+            <button
+              type="button"
+              className={styles.removeButton}
+              onClick={() => onRemove(index)}
+              aria-label="Remove item"
+            >
+              <Trash2 size={16} />
+            </button>
           </div>
-          <button
-            type="button"
-            className={styles.removeButton}
-            onClick={() => onRemove(index)}
-            aria-label="Remove item"
-          >
-            <Trash2 size={16} />
-          </button>
         </div>
       ))}
       <button type="button" className={styles.addButton} onClick={onAdd}>

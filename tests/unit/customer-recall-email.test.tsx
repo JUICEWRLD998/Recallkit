@@ -26,7 +26,57 @@ describe('CustomerRecallEmail', () => {
     expect(html).toContain('data:image/png;base64,')
     expect(html).not.toContain('/assets/hero.png')
     expect(html).not.toContain('display:flex')
+    expect(html).not.toContain('display: flex')
     expect(html).not.toContain('display:grid')
+    expect(html).not.toContain('display: grid')
+    expect(html).not.toMatch(/[;"]gap:/)
+  })
+
+  it('keeps the batch plate, severity semantics, and image fallback intact', () => {
+    const html = renderToHtml(emailTree(), { title: 'Customer Recall Email' })
+
+    // Batch plate: dark ink block with mono codes and plate metadata.
+    expect(html).toContain('AFFECTED BATCHES')
+    expect(html).toContain('Courier New')
+    for (const batch of sampleIncident.product.affectedBatches) {
+      expect(html).toContain(batch)
+    }
+    expect(html).toContain(
+      `MODEL ${sampleIncident.product.model} · RECALL ${sampleIncident.id}`,
+    )
+
+    // Severity banner uses the severity color (high → amber, ink text).
+    expect(html).toContain('HIGH SEVERITY PRODUCT RECALL')
+    expect(html).toContain('#E6A700')
+
+    // Hidden preheader appears before the visible content.
+    const preheaderIndex = html.indexOf(sampleIncident.risk.headline)
+    expect(preheaderIndex).toBeGreaterThan(-1)
+    expect(preheaderIndex).toBeLessThan(html.indexOf('AFFECTED BATCHES'))
+
+    // Meaningful alt text plus a text fallback for blocked images.
+    expect(html).toMatch(/alt="[^"]*Arc 20K Power Bank[^"]*NL-A20[^"]*"/)
+    expect(html).toContain('Image unavailable?')
+  })
+
+  it('renders intentional advisory and critical severity variants', () => {
+    const advisoryIncident = structuredClone(sampleIncident)
+    advisoryIncident.severity = 'advisory'
+    const advisoryHtml = renderToHtml(
+      CustomerRecallEmail({ incident: advisoryIncident }),
+      { title: 'Customer Recall Email' },
+    )
+    expect(advisoryHtml).toContain('SAFETY ADVISORY')
+    expect(advisoryHtml).toContain('#66716F')
+
+    const criticalIncident = structuredClone(sampleIncident)
+    criticalIncident.severity = 'critical'
+    const criticalHtml = renderToHtml(
+      CustomerRecallEmail({ incident: criticalIncident }),
+      { title: 'Customer Recall Email' },
+    )
+    expect(criticalHtml).toContain('CRITICAL PRODUCT RECALL')
+    expect(criticalHtml).toContain('#D92D20')
   })
 
   it('exports a populated Elements JSON tree', () => {

@@ -181,6 +181,8 @@ function App() {
             onPrint={handlePrint}
             activeOutput={activeOutput}
             exportError={exportError}
+            recallId={incident.id}
+            severity={incident.severity}
           />
         }
         sidebar={

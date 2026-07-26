@@ -9,6 +9,7 @@ import {
   Check,
   AlertTriangle,
 } from 'lucide-react';
+import type { RecallSeverity } from '../domain/recall-schema';
 import { StatusBadge } from '../components/ui';
 import styles from './AppHeader.module.css';
 
@@ -22,6 +23,8 @@ interface AppHeaderProps {
   onPrint: () => void;
   activeOutput: string;
   exportError?: string | null;
+  recallId?: string;
+  severity?: RecallSeverity;
 }
 
 const statusText: Record<AppHeaderProps['status'], string> = {
@@ -44,6 +47,12 @@ const copyLabel: Record<CopyState, string> = {
   failed: 'Copy to clipboard failed',
 };
 
+const severityTone: Record<RecallSeverity, string> = {
+  critical: styles.toneCritical,
+  high: styles.toneWarning,
+  advisory: styles.toneNeutral,
+};
+
 export function AppHeader({
   status,
   onReset,
@@ -54,6 +63,8 @@ export function AppHeader({
   onPrint,
   activeOutput,
   exportError,
+  recallId,
+  severity,
 }: AppHeaderProps) {
   const [copyState, setCopyState] = useState<CopyState>('idle');
   const copyTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
@@ -88,23 +99,29 @@ export function AppHeader({
         <div className={styles.mark} aria-hidden="true">RK</div>
         <span className={styles.brandName}>RecallKit</span>
       </div>
-      <StatusBadge variant={status}>{statusText[status]}</StatusBadge>
+      {recallId && (
+        <>
+          <div className={styles.rule} aria-hidden="true" />
+          <div className={styles.casePlate}>
+            <span className={styles.caseLabel}>Recall case</span>
+            <span className={styles.caseId} title={recallId}>{recallId}</span>
+          </div>
+          {severity && (
+            <span className={`${styles.severityChip} ${severityTone[severity]}`}>
+              <span className={styles.severityDot} aria-hidden="true" />
+              {severity}
+            </span>
+          )}
+        </>
+      )}
+      <div className={styles.spacer} />
       {exportError && (
         <span className={styles.exportError} role="status">
           {exportError}
         </span>
       )}
+      <StatusBadge variant={status}>{statusText[status]}</StatusBadge>
       <div className={styles.actions}>
-        <button
-          type="button"
-          className={styles.btn}
-          onClick={onReset}
-          aria-label="Reset"
-          title="Reset"
-        >
-          <RotateCcw size={16} aria-hidden="true" />
-          <span className={styles.btnLabel}>Reset</span>
-        </button>
         <button
           type="button"
           className={`${styles.btn} ${styles.copyBtn} ${copyState === 'copied' ? styles.copySuccess : ''} ${copyState === 'failed' ? styles.copyFailure : ''}`}
@@ -112,7 +129,7 @@ export function AppHeader({
           aria-label={copyLabel[copyState]}
           title="Copy HTML"
         >
-          <CopyIcon size={16} aria-hidden="true" />
+          <CopyIcon size={15} aria-hidden="true" />
           <span className={styles.btnLabel}>{copyText[copyState]}</span>
         </button>
         <span className={styles.srOnly} aria-live="polite">
@@ -125,7 +142,7 @@ export function AppHeader({
           aria-label="Download HTML"
           title="Download HTML"
         >
-          <Download size={16} aria-hidden="true" />
+          <Download size={15} aria-hidden="true" />
           <span className={styles.btnLabel}>HTML</span>
         </button>
         <button
@@ -135,7 +152,7 @@ export function AppHeader({
           aria-label="Download JSON"
           title="Download JSON"
         >
-          <FileText size={16} aria-hidden="true" />
+          <FileText size={15} aria-hidden="true" />
           <span className={styles.btnLabel}>JSON</span>
         </button>
         <button
@@ -145,7 +162,7 @@ export function AppHeader({
           aria-label="Export Case"
           title="Export Case"
         >
-          <Briefcase size={16} aria-hidden="true" />
+          <Briefcase size={15} aria-hidden="true" />
           <span className={styles.btnLabel}>Case</span>
         </button>
         {activeOutput === 'document' && (
@@ -156,10 +173,21 @@ export function AppHeader({
             aria-label="Print"
             title="Print"
           >
-            <Printer size={16} aria-hidden="true" />
+            <Printer size={15} aria-hidden="true" />
             <span className={styles.btnLabel}>Print</span>
           </button>
         )}
+        <div className={styles.actionRule} aria-hidden="true" />
+        <button
+          type="button"
+          className={`${styles.btn} ${styles.resetBtn}`}
+          onClick={onReset}
+          aria-label="Reset to sample"
+          title="Reset to sample"
+        >
+          <RotateCcw size={15} aria-hidden="true" />
+          <span className={styles.btnLabel}>Reset</span>
+        </button>
       </div>
     </header>
   );

@@ -1,14 +1,14 @@
 .accordion {
+  border-bottom: 1px solid var(--line);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 48px;
-  padding: 0 4px;
+  min-height: 52px;
+  padding: 0;
   border: none;
-  border-bottom: 1px solid var(--line);
   cursor: pointer;
   background: transparent;
   width: 100%;
@@ -16,13 +16,20 @@
   color: var(--ink);
 }
 
+.header:hover .title {
+  color: var(--ink);
+}
+
 .title {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 640;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .chevron {
-  transition: transform 0.2s ease;
+  color: var(--muted);
+  transition: transform 0.15s ease;
   flex-shrink: 0;
 }
 
@@ -31,5 +38,11 @@
 }
 
 .content {
-  padding: 20px 0;
+  padding: 4px 0 24px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron {
+    transition: none;
+  }
 }

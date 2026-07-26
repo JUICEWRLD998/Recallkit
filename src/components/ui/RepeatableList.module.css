@@ -1,32 +1,83 @@
-.list {
+.plate {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
 }
 
 .row {
   display: flex;
-  gap: 8px;
-  align-items: center;
+  align-items: stretch;
+  border-bottom: 1px solid var(--line);
 }
 
-.row input {
+.rowIndex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--surface);
+  background: var(--ink);
+}
+
+.plateInput {
   flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 10px;
+  border: none;
+  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.plateInput::placeholder {
+  color: var(--muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.plateInput:focus {
+  outline: none;
+  background: rgb(0 124 120 / 6%);
+}
+
+.plateInput:focus-visible {
+  outline: 3px solid rgb(0 124 120 / 30%);
+  outline-offset: -3px;
 }
 
 .removeButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 36px;
   border: none;
+  border-left: 1px solid var(--line);
   background: transparent;
   cursor: pointer;
   color: var(--muted);
   padding: 0;
   flex-shrink: 0;
-  border-radius: 6px;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.row:hover .removeButton,
+.row:focus-within .removeButton,
+.removeButton:focus-visible {
+  opacity: 1;
 }
 
 .removeButton:hover:not(:disabled) {
@@ -34,8 +85,8 @@
 }
 
 .removeButton:disabled {
-  opacity: 0.35;
   cursor: not-allowed;
+  color: var(--line-strong);
 }
 
 .addButton {
@@ -44,16 +95,35 @@
   justify-content: center;
   gap: 6px;
   height: 36px;
-  border: 1px dashed var(--line);
-  border-radius: 6px;
+  border: none;
   color: var(--muted);
   font-size: 13px;
-  background: transparent;
+  font-weight: 560;
+  background: var(--paper);
   cursor: pointer;
   width: 100%;
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 .addButton:hover {
-  border-color: var(--line-strong);
   color: var(--ink);
+  background: var(--surface);
+}
+
+.addButton:focus-visible {
+  outline: 3px solid rgb(0 124 120 / 30%);
+  outline-offset: -3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .removeButton,
+  .addButton {
+    transition: none;
+  }
+}
+
+@media (hover: none) {
+  .removeButton {
+    opacity: 1;
+  }
 }

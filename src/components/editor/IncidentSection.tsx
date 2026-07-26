@@ -9,16 +9,16 @@ interface IncidentSectionProps {
   dispatch: React.Dispatch<RecallAction>;
 }
 
-const severityOptions: { value: RecallSeverity; label: string }[] = [
-  { value: 'critical', label: 'critical' },
-  { value: 'high', label: 'high' },
-  { value: 'advisory', label: 'advisory' },
+const severityOptions: { value: RecallSeverity; label: string; tone: 'critical' | 'warning' | 'neutral' }[] = [
+  { value: 'critical', label: 'Critical', tone: 'critical' },
+  { value: 'high', label: 'High', tone: 'warning' },
+  { value: 'advisory', label: 'Advisory', tone: 'neutral' },
 ];
 
-const statusOptions: { value: RecallStatus; label: string }[] = [
-  { value: 'active', label: 'active' },
-  { value: 'updated', label: 'updated' },
-  { value: 'resolved', label: 'resolved' },
+const statusOptions: { value: RecallStatus; label: string; tone: 'critical' | 'warning' | 'safe' }[] = [
+  { value: 'active', label: 'Active', tone: 'critical' },
+  { value: 'updated', label: 'Updated', tone: 'warning' },
+  { value: 'resolved', label: 'Resolved', tone: 'safe' },
 ];
 
 export function IncidentSection({ incident, dispatch }: IncidentSectionProps) {

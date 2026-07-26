@@ -1,5 +1,4 @@
 import { Trash2, Plus } from 'lucide-react';
-import { Input } from './Input';
 import styles from './RepeatableList.module.css';
 
 interface RepeatableListProps {
@@ -22,27 +21,34 @@ export function RepeatableList({
   minItems = 1,
 }: RepeatableListProps) {
   return (
-    <div className={styles.list}>
+    <div className={styles.plate}>
       {items.map((item, index) => (
         <div key={index} className={styles.row}>
-          <Input
+          <span className={styles.rowIndex} aria-hidden="true">
+            {String(index + 1).padStart(2, '0')}
+          </span>
+          <input
+            className={styles.plateInput}
             value={item}
             onChange={(e) => onUpdate(index, e.target.value)}
             placeholder={placeholder}
+            aria-label={`Batch ${index + 1}`}
+            spellCheck={false}
+            autoComplete="off"
           />
           <button
             type="button"
             className={styles.removeButton}
             onClick={() => onRemove(index)}
             disabled={items.length <= minItems}
-            aria-label="Remove item"
+            aria-label={`Remove batch ${index + 1}`}
           >
-            <Trash2 size={16} />
+            <Trash2 size={15} />
           </button>
         </div>
       ))}
       <button type="button" className={styles.addButton} onClick={onAdd}>
-        <Plus size={16} />
+        <Plus size={15} />
         {addLabel}
       </button>
     </div>

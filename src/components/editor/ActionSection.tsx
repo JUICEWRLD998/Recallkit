@@ -10,9 +10,9 @@ interface ActionSectionProps {
 }
 
 const remedyOptions: { value: RemedyType; label: string }[] = [
-  { value: 'refund', label: 'refund' },
-  { value: 'replacement', label: 'replacement' },
-  { value: 'repair', label: 'repair' },
+  { value: 'refund', label: 'Refund' },
+  { value: 'replacement', label: 'Replacement' },
+  { value: 'repair', label: 'Repair' },
 ];
 
 export function ActionSection({ incident, dispatch }: ActionSectionProps) {

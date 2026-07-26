@@ -35,8 +35,10 @@ export function ConfirmDialog({
 
   return (
     <dialog ref={dialogRef} className={styles.dialog} onCancel={onCancel}>
-      <h2 className={styles.title}>{title}</h2>
-      <p className={styles.message}>{message}</p>
+      <div className={styles.body}>
+        <h2 className={styles.title}>{title}</h2>
+        <p className={styles.message}>{message}</p>
+      </div>
       <div className={styles.actions}>
         <button type="button" className={styles.cancelButton} onClick={onCancel}>
           Cancel

@@ -15,8 +15,8 @@ interface PreviewStageProps {
 function getWidthOptions(activeOutput: ActiveOutput): WidthOption[] {
   if (activeOutput === 'email') {
     return [
-      { label: 'desktop', ariaLabel: 'Desktop width', icon: <Monitor size={20} />, value: 680 },
-      { label: 'mobile', ariaLabel: 'Mobile width', icon: <Smartphone size={16} />, value: 375 },
+      { label: 'desktop', ariaLabel: 'Desktop width', icon: <Monitor size={16} />, value: 680 },
+      { label: 'mobile', ariaLabel: 'Mobile width', icon: <Smartphone size={15} />, value: 375 },
     ];
   }
 
@@ -28,9 +28,9 @@ function getWidthOptions(activeOutput: ActiveOutput): WidthOption[] {
   }
 
   return [
-    { label: 'desktop', ariaLabel: 'Desktop width', icon: <Monitor size={20} />, value: '100%' },
-    { label: 'tablet', ariaLabel: 'Tablet width', icon: <Tablet size={18} />, value: 768 },
-    { label: 'mobile', ariaLabel: 'Mobile width', icon: <Smartphone size={16} />, value: 375 },
+    { label: 'desktop', ariaLabel: 'Desktop width', icon: <Monitor size={16} />, value: '100%' },
+    { label: 'tablet', ariaLabel: 'Tablet width', icon: <Tablet size={16} />, value: 768 },
+    { label: 'mobile', ariaLabel: 'Mobile width', icon: <Smartphone size={15} />, value: 375 },
   ];
 }
 
@@ -45,26 +45,34 @@ export function PreviewStage({ html, title, activeOutput }: PreviewStageProps) {
   const currentWidth = options[activeIndex]?.value ?? options[0].value;
 
   return (
-    <div>
-      <div className={styles.widthControls} role="group" aria-label="Preview width">
-        {options.map((option, index) => (
-          <button
-            key={option.label}
-            type="button"
-            className={`${styles.widthButton}${index === activeIndex ? ` ${styles.active}` : ''}`}
-            aria-label={option.ariaLabel}
-            aria-pressed={index === activeIndex}
-            onClick={() => setActiveIndex(index)}
-          >
-            {option.icon}
-          </button>
-        ))}
+    <div className={styles.stage}>
+      <div className={styles.toolbar}>
+        <span className={styles.stageTitle}>{title}</span>
+        <span className={styles.widthReadout} aria-hidden="true">
+          {currentWidth === '100%' ? 'FLUID' : `${currentWidth} PX`}
+        </span>
+        <div className={styles.widthControls} role="group" aria-label="Preview width">
+          {options.map((option, index) => (
+            <button
+              key={option.label}
+              type="button"
+              className={`${styles.widthButton}${index === activeIndex ? ` ${styles.active}` : ''}`}
+              aria-label={option.ariaLabel}
+              title={option.ariaLabel}
+              aria-pressed={index === activeIndex}
+              onClick={() => setActiveIndex(index)}
+            >
+              {option.icon}
+            </button>
+          ))}
+        </div>
       </div>
       <PreviewFrame
         html={html}
         title={title}
         width={currentWidth}
         allowScripts={activeOutput === 'page'}
+        variant={activeOutput}
       />
     </div>
   );
