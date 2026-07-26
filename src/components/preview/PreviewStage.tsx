@@ -22,7 +22,8 @@ function getWidthOptions(activeOutput: ActiveOutput): WidthOption[] {
 
   if (activeOutput === 'document') {
     return [
-      { label: 'desktop', ariaLabel: 'Desktop width', icon: <Monitor size={20} />, value: 860 },
+      { label: 'a4', ariaLabel: 'A4 paper preview', icon: <span className={styles.paperLabel}>A4</span>, value: 794 },
+      { label: 'letter', ariaLabel: 'US Letter paper preview', icon: <span className={styles.paperLabel}>LTR</span>, value: 816 },
     ];
   }
 
@@ -59,7 +60,12 @@ export function PreviewStage({ html, title, activeOutput }: PreviewStageProps) {
           </button>
         ))}
       </div>
-      <PreviewFrame html={html} title={title} width={currentWidth} />
+      <PreviewFrame
+        html={html}
+        title={title}
+        width={currentWidth}
+        allowScripts={activeOutput === 'page'}
+      />
     </div>
   );
 }

@@ -28,6 +28,13 @@
   border-color: var(--ink);
 }
 
+.paperLabel {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .widthButton {
     transition: none;

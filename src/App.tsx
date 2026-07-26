@@ -13,7 +13,7 @@ import { EditorPanel } from './components/editor'
 import { PreviewStage } from './components/preview'
 import { ConfirmDialog } from './components/ui'
 import { CustomerRecallEmail } from './templates'
-import { RetailerActionBulletin } from './templates'
+import { RetailerActionBulletin, renderRetailerBulletinHtml } from './templates'
 import { PublicRecallNotice } from './templates'
 import './App.css'
 
@@ -62,16 +62,13 @@ function App() {
       case 'email':
         return renderToHtml(CustomerRecallEmail({ incident }), { title: 'Customer Recall Email' })
       case 'document':
-        return renderToHtml(<RetailerActionBulletin incident={incident} />, { title: 'Retailer Action Bulletin' })
+        return renderRetailerBulletinHtml(incident)
       case 'page':
-        return renderToHtml(<PublicRecallNotice incident={incident} />, { title: 'Public Recall Notice' })
+        return renderToHtml(PublicRecallNotice({ incident }), { title: 'Public Recall Notice' })
     }
   }, [incident, activeOutput])
 
-  const documentHtml = useMemo(
-    () => renderToHtml(<RetailerActionBulletin incident={incident} />, { title: 'Retailer Action Bulletin' }),
-    [incident],
-  )
+  const documentHtml = useMemo(() => renderRetailerBulletinHtml(incident), [incident])
 
   const currentTitle = useMemo(() => {
     switch (activeOutput) {
@@ -95,10 +92,10 @@ function App() {
         json = renderToJson(CustomerRecallEmail({ incident }))
         break
       case 'document':
-        json = renderToJson(<RetailerActionBulletin incident={incident} />)
+        json = renderToJson(RetailerActionBulletin({ incident }))
         break
       case 'page':
-        json = renderToJson(<PublicRecallNotice incident={incident} />)
+        json = renderToJson(PublicRecallNotice({ incident }))
         break
     }
     downloadText(JSON.stringify(json, null, 2), `recallkit-${activeOutput}-${incident.id}.json`, 'application/json')

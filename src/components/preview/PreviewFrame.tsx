@@ -4,9 +4,10 @@ interface PreviewFrameProps {
   html: string;
   title: string;
   width: number | '100%';
+  allowScripts?: boolean;
 }
 
-export function PreviewFrame({ html, title, width }: PreviewFrameProps) {
+export function PreviewFrame({ html, title, width, allowScripts = false }: PreviewFrameProps) {
   const widthLabel = width === '100%' ? '100%' : `${width}px`;
   const iframeWidth = width === '100%' ? '100%' : `${width}px`;
   const key = `${title}-${html.length}-${html.slice(0, 64)}`;
@@ -20,7 +21,7 @@ export function PreviewFrame({ html, title, width }: PreviewFrameProps) {
           className={styles.frame}
           srcDoc={html}
           title={`Preview of ${title}`}
-          sandbox="allow-same-origin"
+          sandbox={allowScripts ? 'allow-scripts allow-popups' : 'allow-same-origin'}
           style={{ width: '100%' }}
         />
       </div>
