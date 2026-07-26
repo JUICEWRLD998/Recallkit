@@ -1,4 +1,5 @@
 import type { RecallIncident } from '../domain/recall-schema'
+import heroImage from '../assets/hero.png'
 
 export const sampleIncident: RecallIncident = {
   id: 'RK-2026-071',
@@ -19,7 +20,7 @@ export const sampleIncident: RecallIncident = {
   product: {
     name: 'Arc 20K Power Bank',
     model: 'NL-A20',
-    imageUrl: '/assets/hero.png',
+    imageUrl: heroImage,
     affectedBatches: [
       'A20-2604-17',
       'A20-2604-18',

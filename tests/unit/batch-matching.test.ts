@@ -28,6 +28,10 @@ describe('matchBatch', () => {
     expect(matchBatch('A20–2604—17', AFFECTED)).toBe('affected')
   })
 
+  it('collapses mixed separators around ASCII dashes', () => {
+    expect(matchBatch('A20 - 2604 - 17', AFFECTED)).toBe('affected')
+  })
+
   it('returns not-found for an unknown batch', () => {
     expect(matchBatch('A20-9999-99', AFFECTED)).toBe('not-found')
   })

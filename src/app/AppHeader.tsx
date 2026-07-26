@@ -1,4 +1,14 @@
-import { RotateCcw, Download, FileText, Briefcase, Printer } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  RotateCcw,
+  Download,
+  FileText,
+  Briefcase,
+  Printer,
+  Copy,
+  Check,
+  AlertTriangle,
+} from 'lucide-react';
 import { StatusBadge } from '../components/ui';
 import styles from './AppHeader.module.css';
 
@@ -8,8 +18,10 @@ interface AppHeaderProps {
   onExportHtml: () => void;
   onExportJson: () => void;
   onExportCase: () => void;
+  onCopyHtml: () => Promise<void>;
   onPrint: () => void;
   activeOutput: string;
+  exportError?: string | null;
 }
 
 const statusText: Record<AppHeaderProps['status'], string> = {
@@ -18,15 +30,58 @@ const statusText: Record<AppHeaderProps['status'], string> = {
   error: 'Save error',
 };
 
+type CopyState = 'idle' | 'copied' | 'failed';
+
+const copyText: Record<CopyState, string> = {
+  idle: 'Copy',
+  copied: 'Copied',
+  failed: 'Failed',
+};
+
+const copyLabel: Record<CopyState, string> = {
+  idle: 'Copy HTML',
+  copied: 'HTML copied to clipboard',
+  failed: 'Copy to clipboard failed',
+};
+
 export function AppHeader({
   status,
   onReset,
   onExportHtml,
   onExportJson,
   onExportCase,
+  onCopyHtml,
   onPrint,
   activeOutput,
+  exportError,
 }: AppHeaderProps) {
+  const [copyState, setCopyState] = useState<CopyState>('idle');
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) {
+        clearTimeout(copyTimerRef.current);
+      }
+    };
+  }, []);
+
+  const handleCopy = useCallback(async () => {
+    if (copyTimerRef.current) {
+      clearTimeout(copyTimerRef.current);
+    }
+    try {
+      await onCopyHtml();
+      setCopyState('copied');
+    } catch {
+      setCopyState('failed');
+    }
+    copyTimerRef.current = setTimeout(() => setCopyState('idle'), 2000);
+  }, [onCopyHtml]);
+
+  const CopyIcon =
+    copyState === 'copied' ? Check : copyState === 'failed' ? AlertTriangle : Copy;
+
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
@@ -34,6 +89,11 @@ export function AppHeader({
         <span className={styles.brandName}>RecallKit</span>
       </div>
       <StatusBadge variant={status}>{statusText[status]}</StatusBadge>
+      {exportError && (
+        <span className={styles.exportError} role="status">
+          {exportError}
+        </span>
+      )}
       <div className={styles.actions}>
         <button
           type="button"
@@ -45,6 +105,19 @@ export function AppHeader({
           <RotateCcw size={16} aria-hidden="true" />
           <span className={styles.btnLabel}>Reset</span>
         </button>
+        <button
+          type="button"
+          className={`${styles.btn} ${styles.copyBtn} ${copyState === 'copied' ? styles.copySuccess : ''} ${copyState === 'failed' ? styles.copyFailure : ''}`}
+          onClick={() => void handleCopy()}
+          aria-label={copyLabel[copyState]}
+          title="Copy HTML"
+        >
+          <CopyIcon size={16} aria-hidden="true" />
+          <span className={styles.btnLabel}>{copyText[copyState]}</span>
+        </button>
+        <span className={styles.srOnly} aria-live="polite">
+          {copyState === 'idle' ? '' : copyLabel[copyState]}
+        </span>
         <button
           type="button"
           className={styles.btn}

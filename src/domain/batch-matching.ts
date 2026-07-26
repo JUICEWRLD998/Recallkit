@@ -4,7 +4,7 @@ function normalize(value: string): string {
   return value
     .trim()
     .toUpperCase()
-    .replace(/[\s‐‑‒–—―._]+/g, '-')
+    .replace(/[\s\-‐‑‒–—―._]+/g, '-')
 }
 
 export function matchBatch(

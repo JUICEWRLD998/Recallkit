@@ -4,7 +4,7 @@ import type { Dispatch } from 'react'
 import type { RecallAction } from './domain/recall-reducer'
 import { recallReducer } from './domain/recall-reducer'
 import { loadIncident, saveIncident, clearIncident } from './lib/persistence'
-import { downloadText, printHtml } from './lib/export'
+import { downloadText, exportFilename, fallbackErrorHtml, printHtml } from './lib/export'
 import { sampleIncident } from './data/sample-incident'
 import { AppShell } from './app/AppShell'
 import { AppHeader } from './app/AppHeader'
@@ -25,7 +25,9 @@ function App() {
   const [status, setStatus] = useState<SaveStatus>('saved')
   const [activeOutput, setActiveOutput] = useState<ActiveOutput>('email')
   const [resetDialogOpen, setResetDialogOpen] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
+  const exportErrorTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
 
   const dispatch: Dispatch<RecallAction> = useCallback((action: RecallAction) => {
     baseDispatch(action)
@@ -57,18 +59,44 @@ function App() {
     }
   }, [incident, status])
 
+  const showExportError = useCallback((message: string) => {
+    if (exportErrorTimerRef.current) {
+      clearTimeout(exportErrorTimerRef.current)
+    }
+    setExportError(message)
+    exportErrorTimerRef.current = setTimeout(() => setExportError(null), 5000)
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (exportErrorTimerRef.current) {
+        clearTimeout(exportErrorTimerRef.current)
+      }
+    }
+  }, [])
+
   const currentHtml = useMemo(() => {
-    switch (activeOutput) {
-      case 'email':
-        return renderToHtml(CustomerRecallEmail({ incident }), { title: 'Customer Recall Email' })
-      case 'document':
-        return renderRetailerBulletinHtml(incident)
-      case 'page':
-        return renderToHtml(PublicRecallNotice({ incident }), { title: 'Public Recall Notice' })
+    try {
+      switch (activeOutput) {
+        case 'email':
+          return renderToHtml(CustomerRecallEmail({ incident }), { title: 'Customer Recall Email' })
+        case 'document':
+          return renderRetailerBulletinHtml(incident)
+        case 'page':
+          return renderToHtml(PublicRecallNotice({ incident }), { title: 'Public Recall Notice' })
+      }
+    } catch {
+      return fallbackErrorHtml('Preview unavailable')
     }
   }, [incident, activeOutput])
 
-  const documentHtml = useMemo(() => renderRetailerBulletinHtml(incident), [incident])
+  const documentHtml = useMemo(() => {
+    try {
+      return renderRetailerBulletinHtml(incident)
+    } catch {
+      return fallbackErrorHtml('Document unavailable')
+    }
+  }, [incident])
 
   const currentTitle = useMemo(() => {
     switch (activeOutput) {
@@ -82,32 +110,55 @@ function App() {
   }, [activeOutput])
 
   const handleExportHtml = useCallback(() => {
-    downloadText(currentHtml, `recallkit-${activeOutput}-${incident.id}.html`, 'text/html')
-  }, [currentHtml, activeOutput, incident.id])
+    try {
+      downloadText(currentHtml, exportFilename(activeOutput, incident.id, 'html'), 'text/html')
+    } catch {
+      showExportError('HTML export failed. Your draft is unaffected.')
+    }
+  }, [currentHtml, activeOutput, incident.id, showExportError])
 
   const handleExportJson = useCallback(() => {
-    let json
-    switch (activeOutput) {
-      case 'email':
-        json = renderToJson(CustomerRecallEmail({ incident }))
-        break
-      case 'document':
-        json = renderToJson(RetailerActionBulletin({ incident }))
-        break
-      case 'page':
-        json = renderToJson(PublicRecallNotice({ incident }))
-        break
+    try {
+      let json
+      switch (activeOutput) {
+        case 'email':
+          json = renderToJson(CustomerRecallEmail({ incident }))
+          break
+        case 'document':
+          json = renderToJson(RetailerActionBulletin({ incident }))
+          break
+        case 'page':
+          json = renderToJson(PublicRecallNotice({ incident }))
+          break
+      }
+      downloadText(JSON.stringify(json, null, 2), exportFilename(activeOutput, incident.id, 'json'), 'application/json')
+    } catch {
+      showExportError('JSON export failed. Your draft is unaffected.')
     }
-    downloadText(JSON.stringify(json, null, 2), `recallkit-${activeOutput}-${incident.id}.json`, 'application/json')
-  }, [activeOutput, incident])
+  }, [activeOutput, incident, showExportError])
 
   const handleExportCase = useCallback(() => {
-    downloadText(JSON.stringify(incident, null, 2), `recallkit-case-${incident.id}.json`, 'application/json')
-  }, [incident])
+    try {
+      downloadText(JSON.stringify(incident, null, 2), exportFilename('case', incident.id, 'json'), 'application/json')
+    } catch {
+      showExportError('Case export failed. Your draft is unaffected.')
+    }
+  }, [incident, showExportError])
 
   const handlePrint = useCallback(() => {
-    printHtml(documentHtml)
-  }, [documentHtml])
+    try {
+      printHtml(documentHtml)
+    } catch {
+      showExportError('Print failed. Your draft is unaffected.')
+    }
+  }, [documentHtml, showExportError])
+
+  const handleCopyHtml = useCallback(async () => {
+    if (!navigator.clipboard?.writeText) {
+      throw new Error('Clipboard API unavailable')
+    }
+    await navigator.clipboard.writeText(currentHtml)
+  }, [currentHtml])
 
   const handleResetConfirm = useCallback(() => {
     dispatch({ type: 'RESET', incident: sampleIncident })
@@ -126,8 +177,10 @@ function App() {
             onExportHtml={handleExportHtml}
             onExportJson={handleExportJson}
             onExportCase={handleExportCase}
+            onCopyHtml={handleCopyHtml}
             onPrint={handlePrint}
             activeOutput={activeOutput}
+            exportError={exportError}
           />
         }
         sidebar={
