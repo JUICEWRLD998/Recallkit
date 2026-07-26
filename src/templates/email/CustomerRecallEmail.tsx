@@ -5,8 +5,10 @@ import {
   Heading,
   Paragraph,
   Button,
+  Image,
   ColumnLayouts,
 } from '@unlayer/react-elements'
+import defaultProductImageUrl from '../../assets/hero.png?inline'
 import type { RecallIncident } from '../../domain/recall-schema'
 import {
   formatDate,
@@ -18,6 +20,11 @@ import { COLORS, severityColor } from '../shared/colors'
 
 export interface CustomerRecallEmailProps {
   incident: RecallIncident
+}
+
+const EMAIL_FONT = {
+  label: 'Arial',
+  value: 'Arial, Helvetica, sans-serif',
 }
 
 function severityBannerText(severity: RecallIncident['severity']): string {
@@ -35,6 +42,10 @@ function bannerBackground(severity: RecallIncident['severity']): string {
   return severity === 'advisory' ? COLORS.ink : severityColor(severity)
 }
 
+function bannerForeground(severity: RecallIncident['severity']): string {
+  return severity === 'high' ? COLORS.ink : COLORS.surface
+}
+
 function statusText(status: RecallIncident['status']): string {
   switch (status) {
     case 'active':
@@ -46,27 +57,78 @@ function statusText(status: RecallIncident['status']): string {
   }
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;')
+}
+
+function safeHttpUrl(value: string): string {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : '#'
+  } catch {
+    return '#'
+  }
+}
+
+function resolveProductImageUrl(value: string): string {
+  const trimmed = value.trim()
+
+  if (!trimmed || trimmed === '/assets/hero.png') {
+    return defaultProductImageUrl
+  }
+
+  if (trimmed.startsWith('data:image/')) {
+    return trimmed
+  }
+
+  return safeHttpUrl(trimmed) === '#' ? defaultProductImageUrl : trimmed
+}
+
+function countLabel(
+  count: number,
+  singular: string,
+  plural = `${singular}s`,
+): string {
+  return `${count} ${count === 1 ? singular : plural} reported`
+}
+
 export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
   const { company, product, risk, action, severity, status } = incident
-
-  const stepsHtml = action.steps
-    .map((step, i) => `<b>${i + 1}.</b> ${step}`)
-    .join('<br>')
-
-  const batchesHtml = product.affectedBatches
-    .map((b) => `<b>${b}</b>`)
-    .join('<br>')
+  const productImageUrl = resolveProductImageUrl(product.imageUrl)
+  const verificationUrl = safeHttpUrl(company.verificationUrl)
+  const phoneHref = `tel:${company.supportPhone.replace(/[^\d+]/g, '')}`
+  const emailHref = `mailto:${company.supportEmail}`
+  const reportSummary = [
+    risk.reportedIncidents == null
+      ? null
+      : countLabel(risk.reportedIncidents, 'incident'),
+    risk.reportedInjuries == null
+      ? null
+      : countLabel(risk.reportedInjuries, 'injury', 'injuries'),
+  ]
+    .filter((value): value is string => value != null)
+    .join(' | ')
 
   return (
     <Email
       backgroundColor={COLORS.paper}
       contentWidth="600px"
-      fontFamily={{ label: 'Arial', value: 'Arial, Helvetica, sans-serif' }}
-      previewText={`Safety recall: ${incident.title} — ${risk.headline}. Stop use immediately.`}
+      fontFamily={EMAIL_FONT}
+      previewText={escapeHtml(
+        `${incident.title}: ${risk.headline}. ${action.immediateInstruction}`,
+      )}
       textColor={COLORS.ink}
     >
-      {/* 2. COMPANY HEADER */}
-      <Row backgroundColor={COLORS.surface} padding="28px 40px 16px">
+      <Row
+        backgroundColor={COLORS.surface}
+        layout={ColumnLayouts.OneColumn}
+        padding="28px 40px 16px 40px"
+      >
         <Column>
           <Heading
             headingType="h2"
@@ -74,18 +136,19 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
             fontWeight={700}
             color={COLORS.ink}
           >
-            {company.name}
+            {escapeHtml(company.name)}
           </Heading>
           <Paragraph
             fontSize="12px"
             color={COLORS.muted}
             lineHeight="145%"
-            html={`Recall ${incident.id} &middot; Announced ${formatDateShort(incident.announcedAt)}`}
+            text={escapeHtml(
+              `Recall ${incident.id} | Announced ${formatDateShort(incident.announcedAt)}`,
+            )}
           />
         </Column>
       </Row>
 
-      {/* 3. SEVERITY BANNER */}
       <Row
         backgroundColor={bannerBackground(severity)}
         layout={ColumnLayouts.TwoWideNarrow}
@@ -97,7 +160,7 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
             headingType="h4"
             fontSize="12px"
             fontWeight={700}
-            color={COLORS.surface}
+            color={bannerForeground(severity)}
           >
             {severityBannerText(severity)}
           </Heading>
@@ -107,7 +170,7 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
             headingType="h4"
             fontSize="12px"
             fontWeight={700}
-            color={COLORS.surface}
+            color={bannerForeground(severity)}
             textAlign="right"
           >
             {statusText(status)}
@@ -115,8 +178,11 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
         </Column>
       </Row>
 
-      {/* 4. RECALL HEADLINE */}
-      <Row backgroundColor={COLORS.surface} padding="28px 40px 12px">
+      <Row
+        backgroundColor={COLORS.surface}
+        layout={ColumnLayouts.OneColumn}
+        padding="28px 40px 12px 40px"
+      >
         <Column>
           <Heading
             headingType="h1"
@@ -125,38 +191,38 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
             color={COLORS.ink}
             lineHeight="118%"
           >
-            {incident.title}
+            {escapeHtml(incident.title)}
           </Heading>
           <Paragraph
             fontSize="16px"
             color={COLORS.muted}
             lineHeight="155%"
-            html={risk.headline.replace(
-              product.name,
-              `<b>${product.name}</b>`
-            )}
+            text={escapeHtml(risk.headline)}
           />
         </Column>
       </Row>
 
-      {/* 5. PRODUCT IMAGE + INFO */}
       <Row
         backgroundColor={COLORS.surface}
         layout={ColumnLayouts.TwoEqual}
-        padding="16px 40px 20px"
+        padding="16px 40px 20px 40px"
       >
-        <Column>
-          <Paragraph
-            html={`<img src="${product.imageUrl}" alt="${product.name}" style="max-width:100%;height:auto;border-radius:6px" />`}
+        <Column padding="0px 12px 0px 0px">
+          <Image
+            src={productImageUrl}
+            altText={escapeHtml(`${product.name}, model ${product.model}`)}
+            textAlign="center"
           />
           <Paragraph
             fontSize="12px"
             color={COLORS.muted}
             lineHeight="145%"
-            text="If this image doesn't load, check your product label for the batch identifier."
+            text={escapeHtml(
+              `Image unavailable? Identify ${product.name} by model ${product.model} and the batch code on its label.`,
+            )}
           />
         </Column>
-        <Column>
+        <Column padding="0px 0px 0px 12px">
           <Heading
             headingType="h4"
             fontSize="11px"
@@ -167,32 +233,31 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
           </Heading>
           <Heading
             headingType="h3"
-            fontSize="16px"
+            fontSize="18px"
             fontWeight={700}
             color={COLORS.ink}
           >
-            {product.name}
+            {escapeHtml(product.name)}
           </Heading>
-          <Paragraph fontSize="14px" color={COLORS.muted} text={product.model} />
-          {risk.reportedIncidents != null && (
-            <Paragraph
-              fontSize="13px"
-              color={COLORS.muted}
-              text={`${risk.reportedIncidents} incidents reported`}
-            />
-          )}
-          {risk.reportedInjuries != null && (
-            <Paragraph
-              fontSize="13px"
-              color={COLORS.critical}
-              text={`${risk.reportedInjuries} injuries reported`}
-            />
-          )}
+          <Paragraph
+            fontSize="14px"
+            color={COLORS.muted}
+            text={escapeHtml(`Model ${product.model}`)}
+          />
+          <Paragraph
+            fontSize="13px"
+            color={COLORS.muted}
+            lineHeight="155%"
+            text="Compare the model and batch code on the rear product label before taking the next step."
+          />
         </Column>
       </Row>
 
-      {/* 6. AFFECTED BATCH PANEL */}
-      <Row backgroundColor={COLORS.surface} padding="12px 40px 20px">
+      <Row
+        backgroundColor={COLORS.surface}
+        layout={ColumnLayouts.OneColumn}
+        padding="12px 40px 20px 40px"
+      >
         <Column
           backgroundColor={COLORS.ink}
           borderRadius="6px"
@@ -206,22 +271,82 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
           >
             AFFECTED BATCH IDENTIFIERS
           </Heading>
-          <Paragraph
-            fontSize="22px"
-            color={COLORS.surface}
-            html={batchesHtml}
-          />
+          {product.affectedBatches.map((batch) => (
+            <Heading
+              key={batch}
+              headingType="h3"
+              fontSize="20px"
+              fontWeight={700}
+              color={COLORS.surface}
+              lineHeight="130%"
+            >
+              {escapeHtml(batch)}
+            </Heading>
+          ))}
           <Paragraph
             fontSize="12px"
             color="#C9D0CE"
             lineHeight="145%"
-            html={`Model ${product.model} / Recall ${incident.id}`}
+            text={escapeHtml(
+              `Model ${product.model} | Recall ${incident.id}`,
+            )}
           />
         </Column>
       </Row>
 
-      {/* 7. IMMEDIATE ACTION */}
-      <Row backgroundColor={COLORS.surface} padding="8px 40px 4px">
+      <Row
+        backgroundColor={COLORS.surface}
+        layout={ColumnLayouts.OneColumn}
+        padding="4px 40px 20px 40px"
+      >
+        <Column
+          backgroundColor="#FFF8E7"
+          borderRadius="6px"
+          padding="18px 20px"
+        >
+          <Heading
+            headingType="h4"
+            fontSize="11px"
+            fontWeight={700}
+            color="#8A5700"
+          >
+            RISK SUMMARY
+          </Heading>
+          <Heading
+            headingType="h3"
+            fontSize="16px"
+            fontWeight={700}
+            color={COLORS.ink}
+            lineHeight="135%"
+          >
+            {escapeHtml(risk.headline)}
+          </Heading>
+          <Paragraph
+            fontSize="14px"
+            color={COLORS.ink}
+            lineHeight="160%"
+            text={escapeHtml(risk.description)}
+          />
+          {reportSummary && (
+            <Paragraph
+              fontSize="13px"
+              color={
+                risk.reportedInjuries != null && risk.reportedInjuries > 0
+                  ? COLORS.critical
+                  : COLORS.muted
+              }
+              lineHeight="150%"
+              text={escapeHtml(reportSummary)}
+            />
+          )}
+        </Column>
+      </Row>
+
+      <Row
+        backgroundColor={COLORS.surface}
+        layout={ColumnLayouts.OneColumn}
+        padding="8px 40px 4px 40px"
+      >
         <Column
           backgroundColor="#FEF3F2"
           borderRadius="6px"
@@ -239,13 +364,16 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
             fontSize="14px"
             color={COLORS.ink}
             lineHeight="155%"
-            html={`<b>${action.immediateInstruction}</b>`}
+            html={`<b>${escapeHtml(action.immediateInstruction)}</b>`}
           />
         </Column>
       </Row>
 
-      {/* 8. NUMBERED STEPS */}
-      <Row backgroundColor={COLORS.surface} padding="16px 40px 20px">
+      <Row
+        backgroundColor={COLORS.surface}
+        layout={ColumnLayouts.OneColumn}
+        padding="16px 40px 20px 40px"
+      >
         <Column>
           <Heading
             headingType="h2"
@@ -255,17 +383,23 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
           >
             What you need to do
           </Heading>
-          <Paragraph
-            fontSize="14px"
-            color={COLORS.ink}
-            lineHeight="175%"
-            html={stepsHtml}
-          />
+          {action.steps.map((step, index) => (
+            <Paragraph
+              key={`${index}-${step}`}
+              fontSize="14px"
+              color={COLORS.ink}
+              lineHeight="160%"
+              html={`<b>${index + 1}.</b> ${escapeHtml(step)}`}
+            />
+          ))}
         </Column>
       </Row>
 
-      {/* 9. REMEDY CALLOUT */}
-      <Row backgroundColor={COLORS.surface} padding="12px 40px 20px">
+      <Row
+        backgroundColor={COLORS.surface}
+        layout={ColumnLayouts.OneColumn}
+        padding="12px 40px 20px 40px"
+      >
         <Column
           backgroundColor="#F0FDFA"
           borderRadius="6px"
@@ -277,31 +411,50 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
             fontWeight={700}
             color={COLORS.safe}
           >
-            {remedyLabel(action.remedyType)} available
+            {`${remedyLabel(action.remedyType)} available`}
           </Heading>
           <Paragraph
             fontSize="14px"
             color={COLORS.ink}
             lineHeight="155%"
-            text={action.remedyDescription}
+            text={escapeHtml(action.remedyDescription)}
+          />
+          <Heading
+            headingType="h4"
+            fontSize="11px"
+            fontWeight={700}
+            color={COLORS.safe}
+          >
+            RETURN INSTRUCTIONS
+          </Heading>
+          <Paragraph
+            fontSize="13px"
+            color={COLORS.ink}
+            lineHeight="155%"
+            text={escapeHtml(action.returnInstructions)}
           />
           {hasDeadline(action) && (
             <Paragraph
               fontSize="13px"
               color={COLORS.muted}
-              text={`Respond by ${formatDate(action.responseDeadline!)}`}
+              text={escapeHtml(
+                `Respond by ${formatDate(action.responseDeadline!)}`,
+              )}
             />
           )}
         </Column>
       </Row>
 
-      {/* 10. PRIMARY CTA */}
-      <Row backgroundColor={COLORS.surface} padding="8px 40px 28px">
+      <Row
+        backgroundColor={COLORS.surface}
+        layout={ColumnLayouts.OneColumn}
+        padding="8px 40px 28px 40px"
+      >
         <Column>
           <Button
-            href={company.verificationUrl}
+            href={verificationUrl}
             backgroundColor={bannerBackground(severity)}
-            color={COLORS.surface}
+            color={bannerForeground(severity)}
             borderRadius="6px"
             fontSize="15px"
             fontWeight={700}
@@ -309,13 +462,16 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
             textAlign="center"
             width="100%"
           >
-            Check my product →
+            Check my product
           </Button>
         </Column>
       </Row>
 
-      {/* 11. SUPPORT DETAILS */}
-      <Row backgroundColor={COLORS.paper} padding="24px 40px">
+      <Row
+        backgroundColor={COLORS.paper}
+        layout={ColumnLayouts.OneColumn}
+        padding="24px 40px"
+      >
         <Column>
           <Heading
             headingType="h3"
@@ -329,43 +485,48 @@ export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
             fontSize="13px"
             color={COLORS.ink}
             lineHeight="170%"
-            html={`<b>Phone:</b> ${company.supportPhone}`}
+            html={`<b>Phone:</b> <a href="${escapeHtml(phoneHref)}">${escapeHtml(company.supportPhone)}</a>`}
           />
           <Paragraph
             fontSize="13px"
             color={COLORS.ink}
             lineHeight="170%"
-            html={`<b>Email:</b> ${company.supportEmail}`}
+            html={`<b>Email:</b> <a href="${escapeHtml(emailHref)}">${escapeHtml(company.supportEmail)}</a>`}
           />
           <Paragraph
             fontSize="13px"
             color={COLORS.ink}
             lineHeight="170%"
-            html={`<b>Hours:</b> ${company.supportHours}`}
+            html={`<b>Hours:</b> ${escapeHtml(company.supportHours)}`}
           />
           <Paragraph
             fontSize="13px"
             color={COLORS.muted}
             lineHeight="160%"
-            text={company.returnInstructions}
+            text={escapeHtml(company.returnInstructions)}
           />
         </Column>
       </Row>
 
-      {/* 12. LEGAL FOOTER */}
-      <Row backgroundColor={COLORS.ink} padding="20px 40px">
+      <Row
+        backgroundColor={COLORS.ink}
+        layout={ColumnLayouts.OneColumn}
+        padding="20px 40px"
+      >
         <Column>
           <Paragraph
             fontSize="11px"
-            color="#8A9290"
+            color="#AAB2B0"
             lineHeight="160%"
             text="This is a fictional recall scenario created for demonstration purposes. No real products, companies, or safety incidents are represented."
           />
           <Paragraph
             fontSize="11px"
-            color="#8A9290"
+            color="#AAB2B0"
             lineHeight="160%"
-            html={`Last updated: ${formatDate(incident.updatedAt)} &middot; Recall ${incident.id}`}
+            text={escapeHtml(
+              `Last updated: ${formatDate(incident.updatedAt)} | Recall ${incident.id}`,
+            )}
           />
         </Column>
       </Row>

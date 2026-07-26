@@ -60,7 +60,7 @@ function App() {
   const currentHtml = useMemo(() => {
     switch (activeOutput) {
       case 'email':
-        return renderToHtml(<CustomerRecallEmail incident={incident} />, { title: 'Customer Recall Email' })
+        return renderToHtml(CustomerRecallEmail({ incident }), { title: 'Customer Recall Email' })
       case 'document':
         return renderToHtml(<RetailerActionBulletin incident={incident} />, { title: 'Retailer Action Bulletin' })
       case 'page':
@@ -92,7 +92,7 @@ function App() {
     let json
     switch (activeOutput) {
       case 'email':
-        json = renderToJson(<CustomerRecallEmail incident={incident} />)
+        json = renderToJson(CustomerRecallEmail({ incident }))
         break
       case 'document':
         json = renderToJson(<RetailerActionBulletin incident={incident} />)
