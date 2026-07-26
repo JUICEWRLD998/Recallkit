@@ -51,7 +51,7 @@ export function downloadText(
   window.setTimeout(() => URL.revokeObjectURL(url), 0)
 }
 
-export function printHtml(html: string) {
+export function printHtml(html: string, onError?: () => void) {
   const frame = document.createElement('iframe')
 
   frame.setAttribute('title', 'RecallKit print document')
@@ -70,18 +70,32 @@ export function printHtml(html: string) {
 
       if (!printWindow) {
         frame.remove()
+        onError?.()
         return
+      }
+
+      let removed = false
+      const removeFrame = () => {
+        if (removed) return
+        removed = true
+        frame.remove()
       }
 
       try {
         printWindow.focus()
+        // Safari's print() returns while the print sheet is still open, so
+        // wait for afterprint before tearing the frame down. Chromium and
+        // Firefox block on print(), so afterprint fires immediately after.
+        printWindow.addEventListener('afterprint', removeFrame, { once: true })
         printWindow.print()
       } catch {
-        frame.remove()
+        removeFrame()
+        onError?.()
         return
       }
 
-      window.setTimeout(() => frame.remove(), 1000)
+      // Long-stop fallback so the frame never leaks if afterprint never fires
+      window.setTimeout(removeFrame, 60_000)
     },
     { once: true },
   )

@@ -1,18 +1,25 @@
 import type { RecallIncident } from '../../domain/recall-schema';
 import type { RecallAction } from '../../domain/recall-reducer';
+import type { ValidationErrors } from '../../domain/recall-validation';
 import { Accordion, FormField, Input, Textarea } from '../ui';
 import styles from './RiskSection.module.css';
 
 interface RiskSectionProps {
   incident: RecallIncident;
   dispatch: React.Dispatch<RecallAction>;
+  errors?: ValidationErrors;
 }
 
-export function RiskSection({ incident, dispatch }: RiskSectionProps) {
+export function RiskSection({ incident, dispatch, errors = {} }: RiskSectionProps) {
   return (
     <Accordion title="Risk" defaultOpen>
       <div className={styles.fields}>
-        <FormField label="Risk headline" htmlFor="field-risk-headline" required>
+        <FormField
+          label="Risk headline"
+          htmlFor="field-risk-headline"
+          error={errors['risk.headline']}
+          required
+        >
           <Input
             id="field-risk-headline"
             value={incident.risk.headline}
@@ -23,7 +30,12 @@ export function RiskSection({ incident, dispatch }: RiskSectionProps) {
           />
         </FormField>
 
-        <FormField label="Risk description" htmlFor="field-risk-description" required>
+        <FormField
+          label="Risk description"
+          htmlFor="field-risk-description"
+          error={errors['risk.description']}
+          required
+        >
           <Textarea
             id="field-risk-description"
             value={incident.risk.description}
@@ -34,7 +46,11 @@ export function RiskSection({ incident, dispatch }: RiskSectionProps) {
           />
         </FormField>
 
-        <FormField label="Reported incidents" htmlFor="field-reported-incidents">
+        <FormField
+          label="Reported incidents"
+          htmlFor="field-reported-incidents"
+          error={errors['risk.reportedIncidents']}
+        >
           <Input
             id="field-reported-incidents"
             type="number"
@@ -50,7 +66,11 @@ export function RiskSection({ incident, dispatch }: RiskSectionProps) {
           />
         </FormField>
 
-        <FormField label="Reported injuries" htmlFor="field-reported-injuries">
+        <FormField
+          label="Reported injuries"
+          htmlFor="field-reported-injuries"
+          error={errors['risk.reportedInjuries']}
+        >
           <Input
             id="field-reported-injuries"
             type="number"

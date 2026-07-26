@@ -3,6 +3,7 @@ import { renderToHtml, renderToJson } from '@unlayer/react-elements'
 import type { Dispatch } from 'react'
 import type { RecallAction } from './domain/recall-reducer'
 import { recallReducer } from './domain/recall-reducer'
+import { recallIncidentSchema } from './domain/recall-schema'
 import { loadIncident, saveIncident, clearIncident } from './lib/persistence'
 import { downloadText, exportFilename, fallbackErrorHtml, printHtml } from './lib/export'
 import { sampleIncident } from './data/sample-incident'
@@ -28,6 +29,26 @@ function App() {
   const [exportError, setExportError] = useState<string | null>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
   const exportErrorTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
+  const incidentRef = useRef(incident)
+  const statusRef = useRef(status)
+
+  useEffect(() => {
+    incidentRef.current = incident
+  }, [incident])
+
+  useEffect(() => {
+    statusRef.current = status
+  }, [status])
+
+  useEffect(() => {
+    const flushDraft = () => {
+      if (statusRef.current === 'unsaved') {
+        saveIncident(incidentRef.current)
+      }
+    }
+    window.addEventListener('pagehide', flushDraft)
+    return () => window.removeEventListener('pagehide', flushDraft)
+  }, [])
 
   const dispatch: Dispatch<RecallAction> = useCallback((action: RecallAction) => {
     baseDispatch(action)
@@ -44,10 +65,9 @@ function App() {
     }
 
     saveTimerRef.current = setTimeout(() => {
-      try {
-        saveIncident(incident)
+      if (saveIncident(incident)) {
         setStatus('saved')
-      } catch {
+      } else {
         setStatus('error')
       }
     }, 300)
@@ -75,26 +95,26 @@ function App() {
     }
   }, [])
 
-  const currentHtml = useMemo(() => {
+  const currentRender = useMemo(() => {
     try {
       switch (activeOutput) {
         case 'email':
-          return renderToHtml(CustomerRecallEmail({ incident }), { title: 'Customer Recall Email' })
+          return { html: renderToHtml(CustomerRecallEmail({ incident }), { title: 'Customer Recall Email' }), ok: true }
         case 'document':
-          return renderRetailerBulletinHtml(incident)
+          return { html: renderRetailerBulletinHtml(incident), ok: true }
         case 'page':
-          return renderToHtml(PublicRecallNotice({ incident }), { title: 'Public Recall Notice' })
+          return { html: renderToHtml(PublicRecallNotice({ incident }), { title: 'Public Recall Notice' }), ok: true }
       }
     } catch {
-      return fallbackErrorHtml('Preview unavailable')
+      return { html: fallbackErrorHtml('Preview unavailable'), ok: false }
     }
   }, [incident, activeOutput])
 
-  const documentHtml = useMemo(() => {
+  const documentRender = useMemo(() => {
     try {
-      return renderRetailerBulletinHtml(incident)
+      return { html: renderRetailerBulletinHtml(incident), ok: true }
     } catch {
-      return fallbackErrorHtml('Document unavailable')
+      return { html: fallbackErrorHtml('Document unavailable'), ok: false }
     }
   }, [incident])
 
@@ -109,15 +129,32 @@ function App() {
     }
   }, [activeOutput])
 
+  const incidentValid = useMemo(
+    () => recallIncidentSchema.safeParse(incident).success,
+    [incident],
+  )
+
+  const validateForExport = useCallback(() => {
+    if (incidentValid) return true
+    showExportError('Fix invalid incident fields before exporting.')
+    return false
+  }, [incidentValid, showExportError])
+
   const handleExportHtml = useCallback(() => {
+    if (!validateForExport()) return
+    if (!currentRender.ok) {
+      showExportError('Preview failed to render. Fix the incident data before exporting.')
+      return
+    }
     try {
-      downloadText(currentHtml, exportFilename(activeOutput, incident.id, 'html'), 'text/html')
+      downloadText(currentRender.html, exportFilename(activeOutput, incident.id, 'html'), 'text/html')
     } catch {
       showExportError('HTML export failed. Your draft is unaffected.')
     }
-  }, [currentHtml, activeOutput, incident.id, showExportError])
+  }, [validateForExport, currentRender, activeOutput, incident.id, showExportError])
 
   const handleExportJson = useCallback(() => {
+    if (!validateForExport()) return
     try {
       let json
       switch (activeOutput) {
@@ -135,30 +172,45 @@ function App() {
     } catch {
       showExportError('JSON export failed. Your draft is unaffected.')
     }
-  }, [activeOutput, incident, showExportError])
+  }, [validateForExport, activeOutput, incident, showExportError])
 
   const handleExportCase = useCallback(() => {
+    if (!validateForExport()) return
     try {
       downloadText(JSON.stringify(incident, null, 2), exportFilename('case', incident.id, 'json'), 'application/json')
     } catch {
       showExportError('Case export failed. Your draft is unaffected.')
     }
-  }, [incident, showExportError])
+  }, [validateForExport, incident, showExportError])
 
   const handlePrint = useCallback(() => {
+    if (!validateForExport()) return
+    if (!documentRender.ok) {
+      showExportError('Preview failed to render. Fix the incident data before exporting.')
+      return
+    }
     try {
-      printHtml(documentHtml)
+      printHtml(documentRender.html, () =>
+        showExportError('Print failed. Your draft is unaffected.'),
+      )
     } catch {
       showExportError('Print failed. Your draft is unaffected.')
     }
-  }, [documentHtml, showExportError])
+  }, [validateForExport, documentRender, showExportError])
 
   const handleCopyHtml = useCallback(async () => {
+    if (!validateForExport()) {
+      throw new Error('Incident data is invalid')
+    }
+    if (!currentRender.ok) {
+      showExportError('Preview failed to render. Fix the incident data before exporting.')
+      throw new Error('Preview failed to render')
+    }
     if (!navigator.clipboard?.writeText) {
       throw new Error('Clipboard API unavailable')
     }
-    await navigator.clipboard.writeText(currentHtml)
-  }, [currentHtml])
+    await navigator.clipboard.writeText(currentRender.html)
+  }, [validateForExport, currentRender, showExportError])
 
   const handleResetConfirm = useCallback(() => {
     dispatch({ type: 'RESET', incident: sampleIncident })
@@ -179,6 +231,7 @@ function App() {
             onExportCase={handleExportCase}
             onCopyHtml={handleCopyHtml}
             onPrint={handlePrint}
+            exportDisabled={!incidentValid}
             activeOutput={activeOutput}
             exportError={exportError}
             recallId={incident.id}
@@ -193,7 +246,7 @@ function App() {
         }
         preview={
           <PreviewStage
-            html={currentHtml}
+            html={currentRender.html}
             title={currentTitle}
             activeOutput={activeOutput}
           />

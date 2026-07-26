@@ -26,15 +26,17 @@ export function loadIncident(): RecallIncident {
   }
 }
 
-export function saveIncident(incident: RecallIncident): void {
+export function saveIncident(incident: RecallIncident): boolean {
   try {
     const envelope: StorageEnvelope = {
       version: SCHEMA_VERSION,
       data: incident,
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope))
+    return true
   } catch {
-    // Storage full or unavailable — silently degrade
+    // Storage full or unavailable — report failure so the UI can surface it
+    return false
   }
 }
 

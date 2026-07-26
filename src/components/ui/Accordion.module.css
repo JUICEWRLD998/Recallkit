@@ -14,9 +14,14 @@
   width: 100%;
   text-align: left;
   color: var(--ink);
+  transition: background 0.15s ease;
 }
 
-.header:hover .title {
+.header:hover {
+  background: var(--paper);
+}
+
+.header:hover .chevron {
   color: var(--ink);
 }
 
@@ -42,6 +47,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .header,
   .chevron {
     transition: none;
   }

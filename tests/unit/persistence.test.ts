@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { loadIncident, saveIncident, clearIncident } from '../../src/lib/persistence'
 import { sampleIncident } from '../../src/data/sample-incident'
 
@@ -36,6 +36,23 @@ describe('persistence', () => {
       JSON.stringify({ version: 1, data: { id: 123 } }),
     )
     expect(loadIncident()).toEqual(sampleIncident)
+  })
+
+  it('returns true when saving succeeds', () => {
+    expect(saveIncident(sampleIncident)).toBe(true)
+  })
+
+  it('returns false when localStorage.setItem throws', () => {
+    const setItemSpy = vi
+      .spyOn(localStorage, 'setItem')
+      .mockImplementation(() => {
+        throw new Error('QuotaExceededError')
+      })
+    try {
+      expect(saveIncident(sampleIncident)).toBe(false)
+    } finally {
+      setItemSpy.mockRestore()
+    }
   })
 
   it('clears stored incident', () => {

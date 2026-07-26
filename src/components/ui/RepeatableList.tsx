@@ -42,6 +42,7 @@ export function RepeatableList({
             onClick={() => onRemove(index)}
             disabled={items.length <= minItems}
             aria-label={`Remove batch ${index + 1}`}
+            title={`Remove batch ${index + 1}`}
           >
             <Trash2 size={15} />
           </button>

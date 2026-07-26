@@ -1,12 +1,15 @@
 import type { RecallIncident } from '../../domain/recall-schema';
 import type { RecallAction } from '../../domain/recall-reducer';
 import type { RemedyType } from '../../domain/recall-schema';
+import type { ValidationErrors } from '../../domain/recall-validation';
+import { fieldError } from '../../domain/recall-validation';
 import { Accordion, FormField, Input, Textarea, SegmentedControl, OrderableList } from '../ui';
 import styles from './ActionSection.module.css';
 
 interface ActionSectionProps {
   incident: RecallIncident;
   dispatch: React.Dispatch<RecallAction>;
+  errors?: ValidationErrors;
 }
 
 const remedyOptions: { value: RemedyType; label: string }[] = [
@@ -15,11 +18,16 @@ const remedyOptions: { value: RemedyType; label: string }[] = [
   { value: 'repair', label: 'Repair' },
 ];
 
-export function ActionSection({ incident, dispatch }: ActionSectionProps) {
+export function ActionSection({ incident, dispatch, errors = {} }: ActionSectionProps) {
   return (
     <Accordion title="Customer Action" defaultOpen={false}>
       <div className={styles.fields}>
-        <FormField label="Immediate instruction" htmlFor="field-immediate-instruction" required>
+        <FormField
+          label="Immediate instruction"
+          htmlFor="field-immediate-instruction"
+          error={errors['action.immediateInstruction']}
+          required
+        >
           <Textarea
             id="field-immediate-instruction"
             value={incident.action.immediateInstruction}
@@ -34,7 +42,11 @@ export function ActionSection({ incident, dispatch }: ActionSectionProps) {
           />
         </FormField>
 
-        <FormField label="Action steps" htmlFor="field-action-steps">
+        <FormField
+          label="Action steps"
+          groupId="field-action-steps-label"
+          error={fieldError(errors, 'action.steps')}
+        >
           <OrderableList
             items={incident.action.steps}
             onAdd={() => dispatch({ type: 'ADD_STEP', value: '' })}
@@ -46,7 +58,11 @@ export function ActionSection({ incident, dispatch }: ActionSectionProps) {
           />
         </FormField>
 
-        <FormField label="Remedy type" htmlFor="field-remedy-type">
+        <FormField
+          label="Remedy type"
+          groupId="field-remedy-type-label"
+          error={errors['action.remedyType']}
+        >
           <SegmentedControl
             value={incident.action.remedyType}
             onChange={(v) => dispatch({ type: 'SET_REMEDY_TYPE', value: v })}
@@ -54,7 +70,12 @@ export function ActionSection({ incident, dispatch }: ActionSectionProps) {
           />
         </FormField>
 
-        <FormField label="Remedy description" htmlFor="field-remedy-description" required>
+        <FormField
+          label="Remedy description"
+          htmlFor="field-remedy-description"
+          error={errors['action.remedyDescription']}
+          required
+        >
           <Textarea
             id="field-remedy-description"
             value={incident.action.remedyDescription}
@@ -69,7 +90,11 @@ export function ActionSection({ incident, dispatch }: ActionSectionProps) {
           />
         </FormField>
 
-        <FormField label="Response deadline" htmlFor="field-response-deadline">
+        <FormField
+          label="Response deadline"
+          htmlFor="field-response-deadline"
+          error={errors['action.responseDeadline']}
+        >
           <Input
             id="field-response-deadline"
             type="date"
@@ -84,7 +109,12 @@ export function ActionSection({ incident, dispatch }: ActionSectionProps) {
           />
         </FormField>
 
-        <FormField label="Return instructions" htmlFor="field-action-return-instructions" required>
+        <FormField
+          label="Return instructions"
+          htmlFor="field-action-return-instructions"
+          error={errors['action.returnInstructions']}
+          required
+        >
           <Textarea
             id="field-action-return-instructions"
             value={incident.action.returnInstructions}

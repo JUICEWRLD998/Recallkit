@@ -1,12 +1,14 @@
 import type { RecallIncident } from '../../domain/recall-schema';
 import type { RecallAction } from '../../domain/recall-reducer';
 import type { RecallSeverity, RecallStatus } from '../../domain/recall-schema';
+import type { ValidationErrors } from '../../domain/recall-validation';
 import { Accordion, FormField, Input, SegmentedControl } from '../ui';
 import styles from './IncidentSection.module.css';
 
 interface IncidentSectionProps {
   incident: RecallIncident;
   dispatch: React.Dispatch<RecallAction>;
+  errors?: ValidationErrors;
 }
 
 const severityOptions: { value: RecallSeverity; label: string; tone: 'critical' | 'warning' | 'neutral' }[] = [
@@ -21,11 +23,11 @@ const statusOptions: { value: RecallStatus; label: string; tone: 'critical' | 'w
   { value: 'resolved', label: 'Resolved', tone: 'safe' },
 ];
 
-export function IncidentSection({ incident, dispatch }: IncidentSectionProps) {
+export function IncidentSection({ incident, dispatch, errors = {} }: IncidentSectionProps) {
   return (
     <Accordion title="Incident" defaultOpen>
       <div className={styles.fields}>
-        <FormField label="Recall title" htmlFor="field-recall-title" required>
+        <FormField label="Recall title" htmlFor="field-recall-title" error={errors['title']} required>
           <Input
             id="field-recall-title"
             value={incident.title}
@@ -36,7 +38,7 @@ export function IncidentSection({ incident, dispatch }: IncidentSectionProps) {
           />
         </FormField>
 
-        <FormField label="Recall ID" htmlFor="field-recall-id" required>
+        <FormField label="Recall ID" htmlFor="field-recall-id" error={errors['id']} required>
           <Input
             id="field-recall-id"
             className={styles.monoInput}
@@ -48,7 +50,12 @@ export function IncidentSection({ incident, dispatch }: IncidentSectionProps) {
           />
         </FormField>
 
-        <FormField label="Announcement date" htmlFor="field-announced-at" required>
+        <FormField
+          label="Announcement date"
+          htmlFor="field-announced-at"
+          error={errors['announcedAt']}
+          required
+        >
           <Input
             id="field-announced-at"
             type="date"
@@ -64,7 +71,7 @@ export function IncidentSection({ incident, dispatch }: IncidentSectionProps) {
           />
         </FormField>
 
-        <FormField label="Severity" htmlFor="field-severity">
+        <FormField label="Severity" groupId="field-severity-label" error={errors['severity']}>
           <SegmentedControl
             value={incident.severity}
             onChange={(v) => dispatch({ type: 'SET_SEVERITY', value: v })}
@@ -72,7 +79,7 @@ export function IncidentSection({ incident, dispatch }: IncidentSectionProps) {
           />
         </FormField>
 
-        <FormField label="Status" htmlFor="field-status">
+        <FormField label="Status" groupId="field-status-label" error={errors['status']}>
           <SegmentedControl
             value={incident.status}
             onChange={(v) => dispatch({ type: 'SET_STATUS', value: v })}

@@ -38,6 +38,7 @@ export function OrderableList({
               onClick={() => onReorder(index, index - 1)}
               disabled={index === 0}
               aria-label="Move up"
+              title="Move up"
             >
               <ChevronUp size={16} />
             </button>
@@ -47,6 +48,7 @@ export function OrderableList({
               onClick={() => onReorder(index, index + 1)}
               disabled={index === items.length - 1}
               aria-label="Move down"
+              title="Move down"
             >
               <ChevronDown size={16} />
             </button>
@@ -55,6 +57,7 @@ export function OrderableList({
               className={styles.removeButton}
               onClick={() => onRemove(index)}
               aria-label="Remove item"
+              title="Remove item"
             >
               <Trash2 size={16} />
             </button>

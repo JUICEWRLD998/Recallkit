@@ -3,3 +3,7 @@
   flex-direction: column;
   gap: 16px;
 }
+
+.monoInput {
+  font-family: var(--font-mono);
+}

@@ -32,6 +32,22 @@ describe('matchBatch', () => {
     expect(matchBatch('A20 - 2604 - 17', AFFECTED)).toBe('affected')
   })
 
+  it('strips a trailing separator', () => {
+    expect(matchBatch('A20-2604-17.', AFFECTED)).toBe('affected')
+  })
+
+  it('strips a leading separator', () => {
+    expect(matchBatch('-A20-2604-17', AFFECTED)).toBe('affected')
+  })
+
+  it('strips a trailing dash', () => {
+    expect(matchBatch('A20-2604-17-', AFFECTED)).toBe('affected')
+  })
+
+  it('strips leading and trailing dots together', () => {
+    expect(matchBatch('.A20-2604-17.', AFFECTED)).toBe('affected')
+  })
+
   it('returns not-found for an unknown batch', () => {
     expect(matchBatch('A20-9999-99', AFFECTED)).toBe('not-found')
   })

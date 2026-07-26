@@ -21,6 +21,7 @@ interface AppHeaderProps {
   onExportCase: () => void;
   onCopyHtml: () => Promise<void>;
   onPrint: () => void;
+  exportDisabled?: boolean;
   activeOutput: string;
   exportError?: string | null;
   recallId?: string;
@@ -61,6 +62,7 @@ export function AppHeader({
   onExportCase,
   onCopyHtml,
   onPrint,
+  exportDisabled = false,
   activeOutput,
   exportError,
   recallId,
@@ -126,8 +128,9 @@ export function AppHeader({
           type="button"
           className={`${styles.btn} ${styles.copyBtn} ${copyState === 'copied' ? styles.copySuccess : ''} ${copyState === 'failed' ? styles.copyFailure : ''}`}
           onClick={() => void handleCopy()}
+          disabled={exportDisabled}
           aria-label={copyLabel[copyState]}
-          title="Copy HTML"
+          title={exportDisabled ? 'Fix invalid fields to enable export' : 'Copy HTML'}
         >
           <CopyIcon size={15} aria-hidden="true" />
           <span className={styles.btnLabel}>{copyText[copyState]}</span>
@@ -139,8 +142,9 @@ export function AppHeader({
           type="button"
           className={styles.btn}
           onClick={onExportHtml}
+          disabled={exportDisabled}
           aria-label="Download HTML"
-          title="Download HTML"
+          title={exportDisabled ? 'Fix invalid fields to enable export' : 'Download HTML'}
         >
           <Download size={15} aria-hidden="true" />
           <span className={styles.btnLabel}>HTML</span>
@@ -149,8 +153,9 @@ export function AppHeader({
           type="button"
           className={styles.btn}
           onClick={onExportJson}
+          disabled={exportDisabled}
           aria-label="Download JSON"
-          title="Download JSON"
+          title={exportDisabled ? 'Fix invalid fields to enable export' : 'Download JSON'}
         >
           <FileText size={15} aria-hidden="true" />
           <span className={styles.btnLabel}>JSON</span>
@@ -159,8 +164,9 @@ export function AppHeader({
           type="button"
           className={styles.btn}
           onClick={onExportCase}
+          disabled={exportDisabled}
           aria-label="Export Case"
-          title="Export Case"
+          title={exportDisabled ? 'Fix invalid fields to enable export' : 'Export Case'}
         >
           <Briefcase size={15} aria-hidden="true" />
           <span className={styles.btnLabel}>Case</span>
@@ -170,8 +176,9 @@ export function AppHeader({
             type="button"
             className={styles.btn}
             onClick={onPrint}
+            disabled={exportDisabled}
             aria-label="Print"
-            title="Print"
+            title={exportDisabled ? 'Fix invalid fields to enable export' : 'Print'}
           >
             <Printer size={15} aria-hidden="true" />
             <span className={styles.btnLabel}>Print</span>

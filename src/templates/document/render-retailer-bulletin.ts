@@ -10,6 +10,7 @@ const DOCUMENT_STYLES = `
   th { background: #e7eae8 !important; color: #17201e !important; font-weight: 700 !important; }
   th, td { vertical-align: top; overflow-wrap: anywhere; }
   h1, h2, h3, h4, p { orphans: 3; widows: 3; }
+  .rk-keep, .rk-plate, .rk-line { break-inside: avoid; page-break-inside: avoid; }
   @page { size: auto; margin: 12mm; }
   @media screen {
     html { background: #dfe4e2; padding: 20px 0; }

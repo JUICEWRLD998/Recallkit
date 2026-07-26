@@ -133,6 +133,18 @@ describe('PublicRecallNotice', () => {
     expect(input.getAttribute('aria-invalid')).toBe('true')
   })
 
+  it('classifies identifiers with leading or trailing separators as affected', () => {
+    const { input, result, submit } = mountBatchChecker()
+
+    submit('A20-2604-17.')
+    expect(result.dataset.state).toBe('affected')
+    expect(result.textContent).toContain('This batch is affected')
+    expect(input.getAttribute('aria-invalid')).toBe('false')
+
+    submit('-A20-2604-17')
+    expect(result.dataset.state).toBe('affected')
+  })
+
   it('keeps the three checker outcomes conservative and actionable', () => {
     const batches = sampleIncident.product.affectedBatches
 

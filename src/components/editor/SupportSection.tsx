@@ -1,18 +1,25 @@
 import type { RecallIncident } from '../../domain/recall-schema';
 import type { RecallAction } from '../../domain/recall-reducer';
+import type { ValidationErrors } from '../../domain/recall-validation';
 import { Accordion, FormField, Input, Textarea } from '../ui';
 import styles from './SupportSection.module.css';
 
 interface SupportSectionProps {
   incident: RecallIncident;
   dispatch: React.Dispatch<RecallAction>;
+  errors?: ValidationErrors;
 }
 
-export function SupportSection({ incident, dispatch }: SupportSectionProps) {
+export function SupportSection({ incident, dispatch, errors = {} }: SupportSectionProps) {
   return (
     <Accordion title="Support" defaultOpen={false}>
       <div className={styles.fields}>
-        <FormField label="Verification URL" htmlFor="field-verification-url" required>
+        <FormField
+          label="Verification URL"
+          htmlFor="field-verification-url"
+          error={errors['company.verificationUrl']}
+          required
+        >
           <Input
             id="field-verification-url"
             type="url"
@@ -28,7 +35,12 @@ export function SupportSection({ incident, dispatch }: SupportSectionProps) {
           />
         </FormField>
 
-        <FormField label="Support phone" htmlFor="field-support-phone" required>
+        <FormField
+          label="Support phone"
+          htmlFor="field-support-phone"
+          error={errors['company.supportPhone']}
+          required
+        >
           <Input
             id="field-support-phone"
             type="tel"
@@ -44,7 +56,12 @@ export function SupportSection({ incident, dispatch }: SupportSectionProps) {
           />
         </FormField>
 
-        <FormField label="Support email" htmlFor="field-support-email" required>
+        <FormField
+          label="Support email"
+          htmlFor="field-support-email"
+          error={errors['company.supportEmail']}
+          required
+        >
           <Input
             id="field-support-email"
             type="email"
@@ -60,7 +77,12 @@ export function SupportSection({ incident, dispatch }: SupportSectionProps) {
           />
         </FormField>
 
-        <FormField label="Support hours" htmlFor="field-support-hours" required>
+        <FormField
+          label="Support hours"
+          htmlFor="field-support-hours"
+          error={errors['company.supportHours']}
+          required
+        >
           <Input
             id="field-support-hours"
             value={incident.company.supportHours}
@@ -75,7 +97,12 @@ export function SupportSection({ incident, dispatch }: SupportSectionProps) {
           />
         </FormField>
 
-        <FormField label="Return instructions" htmlFor="field-company-return-instructions" required>
+        <FormField
+          label="Return instructions"
+          htmlFor="field-company-return-instructions"
+          error={errors['company.returnInstructions']}
+          required
+        >
           <Textarea
             id="field-company-return-instructions"
             value={incident.company.returnInstructions}

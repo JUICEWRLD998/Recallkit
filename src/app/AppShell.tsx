@@ -13,11 +13,10 @@ export function AppShell({ sidebar, preview, header }: AppShellProps) {
   return (
     <div className={styles.shell}>
       {header}
-      <div className={styles.viewSwitcher} role="tablist" aria-label="View switcher">
+      <div className={styles.viewSwitcher} role="group" aria-label="View switcher">
         <button
           type="button"
-          role="tab"
-          aria-selected={activeView === 'editor'}
+          aria-pressed={activeView === 'editor'}
           className={`${styles.viewTab} ${activeView === 'editor' ? styles.viewTabActive : ''}`}
           onClick={() => setActiveView('editor')}
         >
@@ -25,8 +24,7 @@ export function AppShell({ sidebar, preview, header }: AppShellProps) {
         </button>
         <button
           type="button"
-          role="tab"
-          aria-selected={activeView === 'preview'}
+          aria-pressed={activeView === 'preview'}
           className={`${styles.viewTab} ${activeView === 'preview' ? styles.viewTabActive : ''}`}
           onClick={() => setActiveView('preview')}
         >

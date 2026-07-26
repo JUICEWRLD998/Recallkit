@@ -21,6 +21,8 @@ describe('RetailerActionBulletin', () => {
     expect(html).toContain('@page { size: auto; margin: 12mm; }')
     expect(html).toContain('@media print')
     expect(html).toContain('break-inside: avoid')
+    expect(html).toContain('.rk-keep, .rk-plate, .rk-line { break-inside: avoid; page-break-inside: avoid; }')
+    expect(html).toContain('class="rk-keep"')
     expect(html).toContain('print-color-adjust: exact')
     expect(html).toContain('PRODUCT IDENTIFICATION')
     expect(html).toContain('AFFECTED MODELS AND BATCHES')

@@ -16,15 +16,14 @@ const tabs: { value: OutputType; label: string; icon: React.ComponentType<{ size
 
 export function OutputTabs({ activeOutput, onChange }: OutputTabsProps) {
   return (
-    <div className={styles.tablist} role="tablist" aria-label="Output format">
+    <div className={styles.tablist} role="group" aria-label="Output format">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
           <button
             key={tab.value}
             type="button"
-            role="tab"
-            aria-selected={activeOutput === tab.value}
+            aria-pressed={activeOutput === tab.value}
             className={`${styles.tab} ${activeOutput === tab.value ? styles.tabActive : ''}`}
             onClick={() => onChange(tab.value)}
           >

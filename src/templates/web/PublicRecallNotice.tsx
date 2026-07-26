@@ -1,4 +1,9 @@
 import { Column, ColumnLayouts, Html, Page, Row } from '@unlayer/react-elements'
+import {
+  BATCH_EDGE_DASH_RE,
+  BATCH_SEPARATOR_RE,
+  BATCH_VALID_RE,
+} from '../../domain/batch-matching'
 import type { RecallIncident } from '../../domain/recall-schema'
 import {
   formatDate,
@@ -51,7 +56,11 @@ function safePhoneHref(value: string): string | null {
 }
 
 function normalizeBatch(value: string): string {
-  return value.trim().toUpperCase().replace(/[\s\-‐‑‒–—―._]+/g, '-')
+  return value
+    .trim()
+    .toUpperCase()
+    .replace(BATCH_SEPARATOR_RE, '-')
+    .replace(BATCH_EDGE_DASH_RE, '')
 }
 
 function scriptJson(value: unknown): string {
@@ -63,8 +72,9 @@ function scriptJson(value: unknown): string {
 
 function linkOrText(href: string | null, label: string, className = ''): string {
   const text = escapeHtml(label)
-  if (!href) return `<span class="${className}">${text}</span>`
-  return `<a class="${className}" href="${escapeHtml(href)}">${text}</a>`
+  const safeClass = escapeHtml(className)
+  if (!href) return `<span class="${safeClass}">${text}</span>`
+  return `<a class="${safeClass}" href="${escapeHtml(href)}">${text}</a>`
 }
 
 function publicNoticeMarkup(incident: RecallIncident): string {
@@ -105,12 +115,12 @@ function publicNoticeMarkup(incident: RecallIncident): string {
   .rn-sections{background:var(--surface);padding-bottom:72px;padding-top:72px}.rn-two-col{display:grid;gap:56px;grid-template-columns:1fr 1fr}.rn-instruction{border-left:4px solid var(--accent);font-size:18px;font-weight:700;line-height:1.45;margin:0 0 28px;padding-left:16px}.rn-steps{counter-reset:step;list-style:none;margin:0;padding:0}.rn-steps li{border-top:1px solid var(--line);counter-increment:step;display:grid;gap:14px;grid-template-columns:34px 1fr;padding:16px 0}.rn-steps li:before{align-items:center;background:var(--ink);border-radius:4px;color:#fff;content:counter(step);display:flex;font-family:var(--mono);font-size:13px;font-weight:700;height:30px;justify-content:center;width:30px}.rn-remedy{align-self:start;background:var(--paper);border-top:4px solid var(--ink);padding:28px}.rn-remedy .rn-kicker{margin-bottom:10px}.rn-remedy h2{margin-bottom:14px}.rn-remedy p{margin:0 0 18px}.rn-deadline{color:var(--muted);font-size:14px}.rn-return{border-top:1px solid var(--line);font-size:14px;margin-bottom:0!important;padding-top:18px}.rn-return strong{display:inline-block;margin-bottom:4px}.rn-button-light{margin-top:20px}
   .rn-faq{padding-bottom:72px;padding-top:72px}.rn-faq details{border-top:1px solid var(--line)}.rn-faq details:last-child{border-bottom:1px solid var(--line)}.rn-faq summary{cursor:pointer;font-size:18px;font-weight:700;list-style:none;padding:20px 44px 20px 0;position:relative}.rn-faq summary::-webkit-details-marker{display:none}.rn-faq summary::after{color:var(--muted);content:"+";font-family:var(--mono);font-size:22px;font-weight:400;line-height:1;position:absolute;right:4px;top:50%;transform:translateY(-50%)}.rn-faq details[open] summary::after{content:"−"}.rn-faq summary:hover{color:#000}.rn-faq summary:hover::after{color:var(--ink)}.rn-faq details p{color:#4c5654;margin:0;max-width:760px;padding:0 0 22px}
   .rn-support{background:#dfe8e5;padding-bottom:64px;padding-top:64px}.rn-support .rn-kicker{color:#49534f}.rn-support-grid{display:grid;gap:36px;grid-template-columns:1fr 1fr}.rn-contact{display:flex;flex-direction:column;gap:2px}.rn-contact a:not(.rn-button),.rn-contact span{font-size:18px;font-weight:700;overflow-wrap:anywhere;padding:8px 0}.rn-hours{color:#49534f;font-size:14px!important;font-weight:400!important}.rn-footer{background:var(--ink);color:#c9d0ce;font-size:12px;padding-bottom:32px;padding-top:32px}.rn-footer p{margin:4px 0}.rn-footer strong{color:#fff}
-  @media(max-width:700px){.rn-status{align-items:flex-start;gap:10px}.rn-product,.rn-check-grid,.rn-two-col,.rn-support-grid{grid-template-columns:1fr}.rn-product,.rn-check-grid,.rn-two-col{gap:32px}.rn-product-image{min-height:260px}.rn-hero{padding-bottom:42px;padding-top:36px}.rn-product,.rn-checker,.rn-sections,.rn-faq{padding-bottom:48px;padding-top:48px}.rn-risk,.rn-support{padding-bottom:44px;padding-top:44px}.rn-input-row{align-items:stretch;flex-direction:column}.rn-input-row button{width:100%}.rn-id-row{grid-template-columns:92px 1fr}.rn-form{padding:20px}.rn-remedy{padding:22px 20px}}
+  @media(max-width:700px){.rn-status{align-items:flex-start;flex-wrap:wrap;gap:10px}.rn-product,.rn-check-grid,.rn-two-col,.rn-support-grid{grid-template-columns:1fr}.rn-product,.rn-check-grid,.rn-two-col{gap:32px}.rn-product-image{min-height:260px}.rn-hero{padding-bottom:42px;padding-top:36px}.rn-product,.rn-checker,.rn-sections,.rn-faq{padding-bottom:48px;padding-top:48px}.rn-risk,.rn-support{padding-bottom:44px;padding-top:44px}.rn-input-row{align-items:stretch;flex-direction:column}.rn-input-row button{width:100%}.rn-id-row{grid-template-columns:92px 1fr}.rn-form{padding:20px}.rn-remedy{padding:22px 20px}}
   @media(prefers-reduced-motion:reduce){.rn *{scroll-behavior:auto!important}}
 </style>
 <main class="rn" id="rn-main" tabindex="-1">
   <a class="rn-skip" href="#rn-batch-input">Skip to batch checker</a>
-  <div class="rn-status" aria-label="Recall status: ${escapeHtml(status)}">
+  <div class="rn-status">
     <strong>${escapeHtml(severityLabel(incident.severity))} product recall</strong>
     <span>${escapeHtml(status)}</span>
   </div>
@@ -154,16 +164,16 @@ function publicNoticeMarkup(incident: RecallIncident): string {
       </form>
     </div>
   </section>
-  <section class="rn-sections">
+  <section class="rn-sections" aria-labelledby="rn-action-title">
     <div class="rn-wrap rn-two-col">
-      <div aria-labelledby="rn-action-title"><p class="rn-kicker">Immediate action</p><h2 id="rn-action-title">What you need to do</h2><p class="rn-instruction">${escapeHtml(incident.action.immediateInstruction)}</p><ol class="rn-steps">${incident.action.steps.map((step) => `<li><span>${escapeHtml(step)}</span></li>`).join('')}</ol></div>
+      <div><p class="rn-kicker">Immediate action</p><h2 id="rn-action-title">What you need to do</h2><p class="rn-instruction">${escapeHtml(incident.action.immediateInstruction)}</p><ol class="rn-steps">${incident.action.steps.map((step) => `<li><span>${escapeHtml(step)}</span></li>`).join('')}</ol></div>
       <aside class="rn-remedy" aria-labelledby="rn-remedy-title"><p class="rn-kicker">Remedy</p><h2 id="rn-remedy-title">${escapeHtml(remedyLabel(incident.action.remedyType))} available</h2><p>${escapeHtml(incident.action.remedyDescription)}</p>${deadline}<p class="rn-return"><strong>Return instructions</strong><br>${escapeHtml(incident.action.returnInstructions)}</p>${verificationLink}</aside>
     </div>
   </section>
   <section class="rn-wrap rn-faq" aria-labelledby="rn-faq-title">
     <p class="rn-kicker">Frequently asked questions</p><h2 id="rn-faq-title">Questions about this recall</h2>
     <details><summary>How do I know whether my product is affected?</summary><p>Find the batch identifier on the rear label and use the checker above. A matching identifier is affected. If it is missing, damaged, or not recognized, contact ${escapeHtml(incident.company.name)} support; a “not found” result does not prove the product is safe.</p></details>
-    <details><summary>What should I do while I arrange the return?</summary><p>${escapeHtml(incident.action.immediateInstruction)} Keep the unit away from heat and combustible materials, and follow the return instructions provided by support.</p></details>
+    <details><summary>What should I do while I arrange the return?</summary><p>${escapeHtml(incident.action.immediateInstruction)} Follow the return instructions provided by support.</p></details>
     <details><summary>What remedy is available?</summary><p>${escapeHtml(incident.action.remedyDescription)}</p></details>
     <details><summary>What if my batch identifier cannot be read?</summary><p>Do not guess. Stop using the product and contact support by phone or email for help identifying it.</p></details>
   </section>
@@ -176,13 +186,23 @@ function publicNoticeMarkup(incident: RecallIncident): string {
   const form = document.getElementById('rn-batch-form');
   const input = document.getElementById('rn-batch-input');
   const result = document.getElementById('rn-batch-result');
+  const image = document.querySelector('.rn-product-image img');
+  if (image) {
+    image.addEventListener('error', () => {
+      image.outerHTML = '<div class="rn-image-fallback" role="img" aria-label="Product image unavailable">Product image unavailable</div>';
+    });
+  }
   if (!form || !input || !result) return;
-  const normalize = (value) => value.trim().toUpperCase().replace(/[\\s\\-‐‑‒–—―._]+/g, '-');
+  const SEP = new RegExp(${scriptJson(BATCH_SEPARATOR_RE.source)}, 'g');
+  const EDGE = new RegExp(${scriptJson(BATCH_EDGE_DASH_RE.source)}, 'g');
+  const VALID = new RegExp(${scriptJson(BATCH_VALID_RE.source)});
+  const normalize = (value) => value.trim().toUpperCase().replace(SEP, '-').replace(EDGE, '');
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     const batch = normalize(input.value);
-    const valid = /^[A-Z0-9]$/.test(batch) || /^[A-Z0-9][-A-Z0-9]*[A-Z0-9]$/.test(batch);
+    const valid = VALID.test(batch);
     input.setAttribute('aria-invalid', String(!valid));
+    result.textContent = '';
     if (!valid) {
       result.dataset.state = 'invalid';
       result.innerHTML = '<strong>Enter a valid batch identifier</strong><p>Use the letters and numbers printed on the product label. Separators such as spaces, dashes, dots and underscores are accepted.</p>';
