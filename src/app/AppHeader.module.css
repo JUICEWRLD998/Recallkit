@@ -53,7 +53,7 @@
 }
 
 .caseLabel {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 560;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -219,14 +219,37 @@
 }
 
 @media (max-width: 1080px) {
+  /* Compact chip: dot stays visible, label drops */
   .severityChip {
-    display: none;
+    padding: 0 8px;
+    gap: 0;
+    font-size: 0;
+  }
+
+  .severityDot {
+    width: 8px;
+    height: 8px;
   }
 }
 
 @media (max-width: 960px) {
-  .rule,
-  .casePlate {
+  .rule {
+    display: none;
+  }
+
+  .caseLabel {
+    display: none;
+  }
+
+  .caseId {
+    font-size: 12px;
+    max-width: 110px;
+  }
+}
+
+@media (max-width: 620px) {
+  .casePlate,
+  .severityChip {
     display: none;
   }
 }
@@ -295,6 +318,9 @@
   }
 
   .btn {
+    min-width: 40px;
+    height: 40px;
     padding: 0 7px;
+    justify-content: center;
   }
 }

@@ -20,7 +20,7 @@
 }
 
 .input:focus-visible {
-  outline: 3px solid rgb(0 124 120 / 30%);
+  outline: var(--focus-ring);
   outline-offset: 1px;
 }
 
@@ -35,5 +35,12 @@
 @media (prefers-reduced-motion: reduce) {
   .input {
     transition: none;
+  }
+}
+
+/* 16px floor prevents iOS Safari auto-zoom on focus */
+@media (max-width: 880px) {
+  .input {
+    font-size: 16px;
   }
 }

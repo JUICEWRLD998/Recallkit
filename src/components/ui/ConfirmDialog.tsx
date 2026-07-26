@@ -34,7 +34,15 @@ export function ConfirmDialog({
   }, [open]);
 
   return (
-    <dialog ref={dialogRef} className={styles.dialog} onCancel={onCancel}>
+    <dialog
+      ref={dialogRef}
+      className={styles.dialog}
+      onCancel={onCancel}
+      onClick={(e) => {
+        // A click on the backdrop targets the dialog element itself
+        if (e.target === dialogRef.current) onCancel();
+      }}
+    >
       <div className={styles.body}>
         <h2 className={styles.title}>{title}</h2>
         <p className={styles.message}>{message}</p>

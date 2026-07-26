@@ -48,13 +48,20 @@
   letter-spacing: 0;
 }
 
+/* 16px floor prevents iOS Safari auto-zoom on focus */
+@media (max-width: 880px) {
+  .plateInput {
+    font-size: 16px;
+  }
+}
+
 .plateInput:focus {
   outline: none;
   background: rgb(0 124 120 / 6%);
 }
 
 .plateInput:focus-visible {
-  outline: 3px solid rgb(0 124 120 / 30%);
+  outline: var(--focus-ring);
   outline-offset: -3px;
 }
 
@@ -111,7 +118,7 @@
 }
 
 .addButton:focus-visible {
-  outline: 3px solid rgb(0 124 120 / 30%);
+  outline: var(--focus-ring);
   outline-offset: -3px;
 }
 

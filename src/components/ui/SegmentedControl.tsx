@@ -21,7 +21,7 @@ export function SegmentedControl<T extends string>({
   options,
 }: SegmentedControlProps<T>) {
   return (
-    <div className={styles.container} role="group">
+    <div className={styles.container}>
       {options.map((option) => (
         <button
           key={option.value}
@@ -31,7 +31,7 @@ export function SegmentedControl<T extends string>({
           onClick={() => onChange(option.value)}
         >
           {option.tone && <span className={styles.toneDot} aria-hidden="true" />}
-          {option.label}
+          <span className={styles.buttonLabel}>{option.label}</span>
         </button>
       ))}
     </div>

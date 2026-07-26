@@ -28,7 +28,9 @@
 }
 
 .unsaved {
-  background: var(--warning);
+  /* Darker than --warning so the dot alone passes 3:1 when the text
+     label is visually hidden at small widths */
+  background: #9a7100;
   box-shadow: 0 0 0 3px rgb(230 167 0 / 16%);
 }
 

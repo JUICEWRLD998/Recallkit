@@ -13,7 +13,7 @@
   justify-content: center;
   gap: 6px;
   flex: 1;
-  height: 34px;
+  height: 38px;
   padding: 0 8px;
   font-size: 13px;
   font-weight: 560;
@@ -22,10 +22,14 @@
   cursor: pointer;
   color: var(--muted);
   min-width: 0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.buttonLabel {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: color 0.15s ease, background 0.15s ease;
+  min-width: 0;
 }
 
 .button + .button {
@@ -37,7 +41,7 @@
 }
 
 .button:focus-visible {
-  outline: 3px solid rgb(0 124 120 / 30%);
+  outline: var(--focus-ring);
   outline-offset: -3px;
 }
 

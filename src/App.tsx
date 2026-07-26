@@ -16,7 +16,6 @@ import { ConfirmDialog } from './components/ui'
 import { CustomerRecallEmail } from './templates'
 import { RetailerActionBulletin, renderRetailerBulletinHtml } from './templates'
 import { PublicRecallNotice } from './templates'
-import './App.css'
 
 type ActiveOutput = 'email' | 'document' | 'page'
 type SaveStatus = 'saved' | 'unsaved' | 'error'
@@ -141,20 +140,22 @@ function App() {
   }, [incidentValid, showExportError])
 
   const handleExportHtml = useCallback(() => {
-    if (!validateForExport()) return
+    if (!validateForExport()) return false
     if (!currentRender.ok) {
       showExportError('Preview failed to render. Fix the incident data before exporting.')
-      return
+      return false
     }
     try {
       downloadText(currentRender.html, exportFilename(activeOutput, incident.id, 'html'), 'text/html')
+      return true
     } catch {
       showExportError('HTML export failed. Your draft is unaffected.')
+      return false
     }
   }, [validateForExport, currentRender, activeOutput, incident.id, showExportError])
 
   const handleExportJson = useCallback(() => {
-    if (!validateForExport()) return
+    if (!validateForExport()) return false
     try {
       let json
       switch (activeOutput) {
@@ -169,17 +170,21 @@ function App() {
           break
       }
       downloadText(JSON.stringify(json, null, 2), exportFilename(activeOutput, incident.id, 'json'), 'application/json')
+      return true
     } catch {
       showExportError('JSON export failed. Your draft is unaffected.')
+      return false
     }
   }, [validateForExport, activeOutput, incident, showExportError])
 
   const handleExportCase = useCallback(() => {
-    if (!validateForExport()) return
+    if (!validateForExport()) return false
     try {
       downloadText(JSON.stringify(incident, null, 2), exportFilename('case', incident.id, 'json'), 'application/json')
+      return true
     } catch {
       showExportError('Case export failed. Your draft is unaffected.')
+      return false
     }
   }, [validateForExport, incident, showExportError])
 
@@ -238,12 +243,8 @@ function App() {
             severity={incident.severity}
           />
         }
-        sidebar={
-          <>
-            <OutputTabs activeOutput={activeOutput} onChange={setActiveOutput} />
-            <EditorPanel incident={incident} dispatch={dispatch} />
-          </>
-        }
+        tabs={<OutputTabs activeOutput={activeOutput} onChange={setActiveOutput} />}
+        sidebar={<EditorPanel incident={incident} dispatch={dispatch} />}
         preview={
           <PreviewStage
             html={currentRender.html}

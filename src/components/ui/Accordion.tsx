@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import styles from './Accordion.module.css';
 
@@ -10,6 +10,7 @@ interface AccordionProps {
 
 export function Accordion({ title, defaultOpen = false, children }: AccordionProps) {
   const [open, setOpen] = useState(defaultOpen);
+  const contentId = useId();
 
   return (
     <div className={styles.accordion}>
@@ -18,6 +19,7 @@ export function Accordion({ title, defaultOpen = false, children }: AccordionPro
         className={styles.header}
         onClick={() => setOpen(!open)}
         aria-expanded={open}
+        aria-controls={contentId}
       >
         <span className={styles.title}>{title}</span>
         <ChevronDown
@@ -25,7 +27,11 @@ export function Accordion({ title, defaultOpen = false, children }: AccordionPro
           className={`${styles.chevron}${open ? ` ${styles.chevronOpen}` : ''}`}
         />
       </button>
-      {open && <div className={styles.content}>{children}</div>}
+      {open && (
+        <div id={contentId} className={styles.content}>
+          {children}
+        </div>
+      )}
     </div>
   );
 }

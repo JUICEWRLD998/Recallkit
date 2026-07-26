@@ -42,8 +42,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border: 1px solid var(--line);
   border-radius: 4px;
   background: var(--surface);
@@ -66,8 +66,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
@@ -118,5 +118,11 @@
 @media (hover: none) {
   .controls {
     opacity: 1;
+  }
+
+  .reorderButton,
+  .removeButton {
+    width: 40px;
+    height: 40px;
   }
 }

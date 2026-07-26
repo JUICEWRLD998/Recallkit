@@ -5,9 +5,10 @@ interface AppShellProps {
   sidebar: React.ReactNode;
   preview: React.ReactNode;
   header: React.ReactNode;
+  tabs?: React.ReactNode;
 }
 
-export function AppShell({ sidebar, preview, header }: AppShellProps) {
+export function AppShell({ sidebar, preview, header, tabs }: AppShellProps) {
   const [activeView, setActiveView] = useState<'editor' | 'preview'>('editor');
 
   return (
@@ -33,9 +34,11 @@ export function AppShell({ sidebar, preview, header }: AppShellProps) {
       </div>
       <div className={styles.body}>
         <div className={`${styles.sidebar} ${activeView === 'preview' ? styles.hidden : ''}`}>
+          {tabs}
           {sidebar}
         </div>
         <div className={`${styles.preview} ${activeView === 'editor' ? styles.hidden : ''}`}>
+          {activeView === 'preview' && <div className={styles.previewTabs}>{tabs}</div>}
           {preview}
         </div>
       </div>

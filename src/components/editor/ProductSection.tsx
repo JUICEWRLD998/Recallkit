@@ -87,7 +87,9 @@ export function ProductSection({ incident, dispatch, errors = {} }: ProductSecti
             items={incident.product.affectedBatches}
             onAdd={() => dispatch({ type: 'ADD_BATCH', value: '' })}
             onRemove={(index) => dispatch({ type: 'REMOVE_BATCH', index })}
-            onUpdate={(index, value) => dispatch({ type: 'UPDATE_BATCH', index, value })}
+            onUpdate={(index, value) =>
+              dispatch({ type: 'UPDATE_BATCH', index, value: value.toUpperCase() })
+            }
             addLabel="Add batch"
             placeholder="e.g. A20-2604-17"
             minItems={1}

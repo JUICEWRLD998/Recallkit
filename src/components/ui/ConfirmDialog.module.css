@@ -41,7 +41,7 @@
 }
 
 .cancelButton {
-  height: 36px;
+  height: 38px;
   padding: 0 14px;
   border: 1px solid var(--line-strong);
   border-radius: 6px;
@@ -58,7 +58,7 @@
 }
 
 .confirmButton {
-  height: 36px;
+  height: 38px;
   padding: 0 14px;
   border: none;
   border-radius: 6px;
@@ -73,7 +73,7 @@
 }
 
 .confirmDefault:hover {
-  background: #232d38;
+  background: color-mix(in srgb, var(--ink) 88%, white);
 }
 
 .confirmDestructive {
@@ -81,5 +81,5 @@
 }
 
 .confirmDestructive:hover {
-  background: #b7271b;
+  background: color-mix(in srgb, var(--critical) 85%, black);
 }

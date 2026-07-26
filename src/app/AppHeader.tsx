@@ -16,9 +16,9 @@ import styles from './AppHeader.module.css';
 interface AppHeaderProps {
   status: 'saved' | 'unsaved' | 'error';
   onReset: () => void;
-  onExportHtml: () => void;
-  onExportJson: () => void;
-  onExportCase: () => void;
+  onExportHtml: () => boolean;
+  onExportJson: () => boolean;
+  onExportCase: () => boolean;
   onCopyHtml: () => Promise<void>;
   onPrint: () => void;
   exportDisabled?: boolean;
@@ -54,6 +54,14 @@ const severityTone: Record<RecallSeverity, string> = {
   advisory: styles.toneNeutral,
 };
 
+type DownloadKind = 'html' | 'json' | 'case';
+
+const downloadedLabel: Record<DownloadKind, string> = {
+  html: 'HTML file downloaded',
+  json: 'JSON file downloaded',
+  case: 'Case file downloaded',
+};
+
 export function AppHeader({
   status,
   onReset,
@@ -69,12 +77,17 @@ export function AppHeader({
   severity,
 }: AppHeaderProps) {
   const [copyState, setCopyState] = useState<CopyState>('idle');
+  const [downloaded, setDownloaded] = useState<DownloadKind | null>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const downloadTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
     return () => {
       if (copyTimerRef.current) {
         clearTimeout(copyTimerRef.current);
+      }
+      if (downloadTimerRef.current) {
+        clearTimeout(downloadTimerRef.current);
       }
     };
   }, []);
@@ -91,6 +104,15 @@ export function AppHeader({
     }
     copyTimerRef.current = setTimeout(() => setCopyState('idle'), 2000);
   }, [onCopyHtml]);
+
+  const flashDownloaded = useCallback((kind: DownloadKind, run: () => boolean) => {
+    if (!run()) return;
+    if (downloadTimerRef.current) {
+      clearTimeout(downloadTimerRef.current);
+    }
+    setDownloaded(kind);
+    downloadTimerRef.current = setTimeout(() => setDownloaded(null), 2000);
+  }, []);
 
   const CopyIcon =
     copyState === 'copied' ? Check : copyState === 'failed' ? AlertTriangle : Copy;
@@ -109,7 +131,10 @@ export function AppHeader({
             <span className={styles.caseId} title={recallId}>{recallId}</span>
           </div>
           {severity && (
-            <span className={`${styles.severityChip} ${severityTone[severity]}`}>
+            <span
+              className={`${styles.severityChip} ${severityTone[severity]}`}
+              title={`Severity: ${severity}`}
+            >
               <span className={styles.severityDot} aria-hidden="true" />
               {severity}
             </span>
@@ -117,11 +142,12 @@ export function AppHeader({
         </>
       )}
       <div className={styles.spacer} />
-      {exportError && (
-        <span className={styles.exportError} role="status">
-          {exportError}
-        </span>
-      )}
+      <span
+        className={exportError ? styles.exportError : styles.srOnly}
+        role="status"
+      >
+        {exportError ?? ''}
+      </span>
       <StatusBadge variant={status}>{statusText[status]}</StatusBadge>
       <div className={styles.actions}>
         <button
@@ -136,39 +162,55 @@ export function AppHeader({
           <span className={styles.btnLabel}>{copyText[copyState]}</span>
         </button>
         <span className={styles.srOnly} aria-live="polite">
-          {copyState === 'idle' ? '' : copyLabel[copyState]}
+          {copyState !== 'idle'
+            ? copyLabel[copyState]
+            : downloaded
+              ? downloadedLabel[downloaded]
+              : ''}
         </span>
         <button
           type="button"
-          className={styles.btn}
-          onClick={onExportHtml}
+          className={`${styles.btn} ${downloaded === 'html' ? styles.copySuccess : ''}`}
+          onClick={() => flashDownloaded('html', onExportHtml)}
           disabled={exportDisabled}
           aria-label="Download HTML"
           title={exportDisabled ? 'Fix invalid fields to enable export' : 'Download HTML'}
         >
-          <Download size={15} aria-hidden="true" />
+          {downloaded === 'html' ? (
+            <Check size={15} aria-hidden="true" />
+          ) : (
+            <Download size={15} aria-hidden="true" />
+          )}
           <span className={styles.btnLabel}>HTML</span>
         </button>
         <button
           type="button"
-          className={styles.btn}
-          onClick={onExportJson}
+          className={`${styles.btn} ${downloaded === 'json' ? styles.copySuccess : ''}`}
+          onClick={() => flashDownloaded('json', onExportJson)}
           disabled={exportDisabled}
           aria-label="Download JSON"
           title={exportDisabled ? 'Fix invalid fields to enable export' : 'Download JSON'}
         >
-          <FileText size={15} aria-hidden="true" />
+          {downloaded === 'json' ? (
+            <Check size={15} aria-hidden="true" />
+          ) : (
+            <FileText size={15} aria-hidden="true" />
+          )}
           <span className={styles.btnLabel}>JSON</span>
         </button>
         <button
           type="button"
-          className={styles.btn}
-          onClick={onExportCase}
+          className={`${styles.btn} ${downloaded === 'case' ? styles.copySuccess : ''}`}
+          onClick={() => flashDownloaded('case', onExportCase)}
           disabled={exportDisabled}
           aria-label="Export Case"
           title={exportDisabled ? 'Fix invalid fields to enable export' : 'Export Case'}
         >
-          <Briefcase size={15} aria-hidden="true" />
+          {downloaded === 'case' ? (
+            <Check size={15} aria-hidden="true" />
+          ) : (
+            <Briefcase size={15} aria-hidden="true" />
+          )}
           <span className={styles.btnLabel}>Case</span>
         </button>
         {activeOutput === 'document' && (
