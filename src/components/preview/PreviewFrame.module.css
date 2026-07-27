@@ -1,12 +1,13 @@
 .container {
+  position: relative;
   flex: 1;
   min-height: 0;
   overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 28px;
   background: var(--stage);
-  display: grid;
-  justify-items: center;
-  align-items: stretch;
-  padding: 24px;
 }
 
 .containerFull {
@@ -14,32 +15,28 @@
 }
 
 .sheet {
-  display: flex;
-  min-height: 100%;
+  background: #fff;
+  transition: width var(--dur-3) var(--ease-out);
 }
 
 .sheetFull {
   max-width: none;
+  width: 100% !important;
 }
 
-.sheetEmail {
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
+.sheetEmail,
+.sheetPage {
   overflow: hidden;
-  box-shadow: 0 1px 2px rgb(17 24 32 / 6%), 0 8px 24px rgb(17 24 32 / 8%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
 }
 
 .sheetDocument {
-  border: 1px solid var(--line-doc);
   overflow: hidden;
-  box-shadow: 0 1px 3px rgb(17 24 32 / 10%), 0 12px 32px rgb(17 24 32 / 12%);
-}
-
-.sheetPage {
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgb(17 24 32 / 6%), 0 8px 24px rgb(17 24 32 / 8%);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-2);
 }
 
 .sheetPage.sheetFull {
@@ -49,12 +46,12 @@
 }
 
 .frame {
-  max-width: 100%;
   width: 100%;
-  border: 0;
-  background: white;
+  max-width: 100%;
   display: block;
-  flex: 1;
+  border: 0;
+  background: transparent;
+  min-height: 0;
 }
 
 @media (max-width: 620px) {

@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Monitor, Tablet, Smartphone } from 'lucide-react';
 import { PreviewFrame } from './PreviewFrame';
 import styles from './PreviewStage.module.css';
 
 type ActiveOutput = 'email' | 'document' | 'page';
-type WidthOption = { label: string; ariaLabel: string; icon: React.ReactNode; value: number | '100%' };
+
+interface WidthOption {
+  label: string;
+  value: number | '100%';
+}
 
 interface PreviewStageProps {
   html: string;
@@ -15,22 +18,22 @@ interface PreviewStageProps {
 function getWidthOptions(activeOutput: ActiveOutput): WidthOption[] {
   if (activeOutput === 'email') {
     return [
-      { label: 'desktop', ariaLabel: 'Desktop width', icon: <Monitor size={16} />, value: 680 },
-      { label: 'mobile', ariaLabel: 'Mobile width', icon: <Smartphone size={15} />, value: 375 },
+      { label: 'Desktop', value: 680 },
+      { label: 'Mobile', value: 375 },
     ];
   }
 
   if (activeOutput === 'document') {
     return [
-      { label: 'a4', ariaLabel: 'A4 paper preview', icon: <span className={styles.paperLabel}>A4</span>, value: 794 },
-      { label: 'letter', ariaLabel: 'US Letter paper preview', icon: <span className={styles.paperLabel}>LTR</span>, value: 816 },
+      { label: 'A4', value: 794 },
+      { label: 'Letter', value: 816 },
     ];
   }
 
   return [
-    { label: 'desktop', ariaLabel: 'Desktop width', icon: <Monitor size={16} />, value: '100%' },
-    { label: 'tablet', ariaLabel: 'Tablet width', icon: <Tablet size={16} />, value: 768 },
-    { label: 'mobile', ariaLabel: 'Mobile width', icon: <Smartphone size={15} />, value: 375 },
+    { label: 'Full', value: '100%' },
+    { label: 'Tablet', value: 768 },
+    { label: 'Mobile', value: 375 },
   ];
 }
 
@@ -48,21 +51,16 @@ export function PreviewStage({ html, title, activeOutput }: PreviewStageProps) {
     <div className={styles.stage}>
       <div className={styles.toolbar}>
         <span className={styles.stageTitle}>{title}</span>
-        <span className={styles.widthReadout} aria-hidden="true">
-          {currentWidth === '100%' ? 'FLUID' : `${currentWidth} PX`}
-        </span>
         <div className={styles.widthControls} role="group" aria-label="Preview width">
           {options.map((option, index) => (
             <button
               key={option.label}
               type="button"
               className={`${styles.widthButton}${index === activeIndex ? ` ${styles.active}` : ''}`}
-              aria-label={option.ariaLabel}
-              title={option.ariaLabel}
               aria-pressed={index === activeIndex}
               onClick={() => setActiveIndex(index)}
             >
-              {option.icon}
+              {option.label}
             </button>
           ))}
         </div>

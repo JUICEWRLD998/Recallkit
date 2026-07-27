@@ -30,6 +30,7 @@ describe('RetailerActionBulletin', () => {
     expect(html).toContain('ESCALATION CHECKLIST')
     expect(html).toContain('STAFF ACKNOWLEDGEMENT')
     expect(html).toContain('<table')
+    expect(html).not.toContain('width:33.33%;padding:20px')
     expect(html).toContain('QUARANTINE - DO NOT SELL')
     expect(html).toContain('data:image/png;base64,')
     expect(html).not.toContain('/assets/hero.png')

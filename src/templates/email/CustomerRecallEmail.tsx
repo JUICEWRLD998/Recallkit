@@ -17,25 +17,24 @@ import {
   remedyLabel,
   hasDeadline,
 } from '../../domain/recall-selectors'
-import { COLORS, severityColor, statusColor } from '../shared/colors'
+import {
+  resolveTemplateColors,
+  severityColor,
+  severityTint,
+  statusColor,
+  type TemplatePalette,
+  BODY_FONT,
+  DISPLAY_FONT,
+  MONO_FONT,
+} from '../shared'
 
 export interface CustomerRecallEmailProps {
   incident: RecallIncident
 }
 
-const EMAIL_FONT = {
-  label: 'Arial',
-  value: 'Arial, Helvetica, sans-serif',
-}
-
-const MONO_FONT = {
-  label: 'Courier New',
-  value: "'Courier New', Courier, monospace",
-}
-
-const PLATE_MUTED = '#9AA6A4'
-const PLATE_RULE = '#2A333C'
-const FOOTER_TEXT = '#AAB2B0'
+const PLATE_MUTED = '#9E9CB0'
+const PLATE_RULE = '#353445'
+const FOOTER_TEXT = '#A5A4B5'
 
 function severityBannerText(severity: RecallIncident['severity']): string {
   switch (severity) {
@@ -48,8 +47,13 @@ function severityBannerText(severity: RecallIncident['severity']): string {
   }
 }
 
-function bannerForeground(severity: RecallIncident['severity']): string {
-  return severity === 'high' ? COLORS.ink : COLORS.surface
+function recallBadgesHtml(incident: RecallIncident, colors: TemplatePalette): string {
+  const sev = severityColor(incident.severity)
+  const tint = severityTint(incident.severity)
+  return (
+    `<span style="display:inline-block;background:${tint};color:${colors.ink};border:1px solid ${sev};padding:6px 12px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:1px;margin-right:8px;">${severityBannerText(incident.severity)}</span>` +
+    `<span style="display:inline-block;border:1px solid ${colors.line};color:${colors.muted};padding:6px 12px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:1px;"><span style="color:${statusColor(incident.status)};">&#9679;</span> ${statusText(incident.status)}</span>`
+  )
 }
 
 function statusText(status: RecallIncident['status']): string {
@@ -83,561 +87,151 @@ function safeHttpUrl(value: string): string {
 
 function resolveProductImageUrl(value: string): string {
   const trimmed = value.trim()
-
-  if (!trimmed || trimmed === '/assets/hero.png') {
-    return defaultProductImageUrl
-  }
-
-  if (trimmed.startsWith('data:image/')) {
-    return trimmed
-  }
-
+  if (!trimmed || trimmed === '/assets/hero.png') return defaultProductImageUrl
+  if (trimmed.startsWith('data:image/')) return trimmed
   return safeHttpUrl(trimmed) === '#' ? defaultProductImageUrl : trimmed
 }
 
-function countLabel(
-  count: number,
-  singular: string,
-  plural = `${singular}s`,
-): string {
-  return `${count} ${count === 1 ? singular : plural} reported`
-}
-
-function stepNumeral(index: number): string {
+function stepNumeral(index: number, colors: TemplatePalette): string {
   return (
-    `<span style="display:inline-block;min-width:22px;background-color:${COLORS.ink};` +
-    `color:${COLORS.surface};font-family:&#39;Courier New&#39;,Courier,monospace;` +
-    'font-size:13px;font-weight:700;line-height:22px;text-align:center;' +
-    'border-radius:3px;">' +
+    `<span style="display:inline-block;min-width:24px;height:24px;background:${colors.ink};` +
+    `color:${colors.surface};font-family:&#39;Courier New&#39;,Courier,monospace;` +
+    'font-size:12px;font-weight:700;line-height:24px;text-align:center;border-radius:5px;">' +
     `${index + 1}</span>`
   )
 }
 
 export function CustomerRecallEmail({ incident }: CustomerRecallEmailProps) {
-  const { company, product, risk, action, severity, status } = incident
+  const colors = resolveTemplateColors(incident)
+  const { company, product, risk, action } = incident
   const productImageUrl = resolveProductImageUrl(product.imageUrl)
   const verificationUrl = safeHttpUrl(company.verificationUrl)
   const phoneHref = `tel:${company.supportPhone.replace(/[^\d+]/g, '')}`
   const emailHref = `mailto:${company.supportEmail}`
-  const reportSummary = [
-    risk.reportedIncidents == null
-      ? null
-      : countLabel(risk.reportedIncidents, 'incident'),
-    risk.reportedInjuries == null
-      ? null
-      : countLabel(risk.reportedInjuries, 'injury', 'injuries'),
-  ]
-    .filter((value): value is string => value != null)
-    .join('  ·  ')
-  const hasInjuries = risk.reportedInjuries != null && risk.reportedInjuries > 0
 
   return (
     <Email
-      backgroundColor={COLORS.paper}
+      backgroundColor={colors.paper}
       contentWidth="600px"
-      fontFamily={EMAIL_FONT}
-      previewText={escapeHtml(
-        `${incident.title}: ${risk.headline}. ${action.immediateInstruction}`,
-      )}
-      textColor={COLORS.ink}
+      fontFamily={BODY_FONT}
+      previewText={escapeHtml(`${incident.title}. ${action.immediateInstruction}`)}
+      textColor={colors.ink}
     >
-      {/* 2. Company wordmark and recall status */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.TwoWideNarrow}
-        padding="24px 24px 8px 24px"
-      >
+      <Row backgroundColor={colors.ink} layout={ColumnLayouts.TwoWideNarrow} padding="32px 44px 14px 44px">
         <Column>
-          <Heading
-            headingType="h2"
-            fontSize="18px"
-            fontWeight={700}
-            color={COLORS.ink}
-            containerPadding="0px 10px 2px 10px"
-          >
+          <Heading headingType="h2" fontSize="19px" fontWeight={700} color={colors.surface} fontFamily={DISPLAY_FONT} containerPadding="0px">
             {escapeHtml(company.name)}
           </Heading>
-          <Paragraph
-            fontSize="12px"
-            color={COLORS.muted}
-            lineHeight="150%"
-            containerPadding="0px 10px"
-            fontFamily={MONO_FONT}
-            text={escapeHtml(
-              `RECALL ${incident.id} · ${formatDateShort(incident.announcedAt)}`,
-            )}
-          />
+          <Paragraph fontSize="11px" color={PLATE_MUTED} lineHeight="150%" containerPadding="6px 0px 0px 0px" fontFamily={MONO_FONT} text={escapeHtml(`RECALL ${incident.id} · ${formatDateShort(incident.announcedAt)}`)} />
         </Column>
         <Column>
-          <Paragraph
-            fontSize="11px"
-            fontWeight={700}
-            color={COLORS.ink}
-            letterSpacing="1px"
-            textAlign="right"
-            lineHeight="150%"
-            containerPadding="4px 10px 0px 10px"
-            html={`<span style="color:${statusColor(status)};">&#9679;</span>&nbsp; ${statusText(status)}`}
-          />
+          <Paragraph fontSize="11px" fontWeight={700} color={colors.surface} letterSpacing="1px" textAlign="right" lineHeight="150%" containerPadding="4px 0px 0px 0px" html={`<span style="color:${statusColor(incident.status)};">&#9679;</span>&nbsp; ${statusText(incident.status)}`} />
         </Column>
       </Row>
 
-      {/* 3. Severity banner — the single color statement of the email */}
-      <Row
-        backgroundColor={severityColor(severity)}
-        layout={ColumnLayouts.OneColumn}
-        padding="8px 24px"
-      >
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="40px 44px 24px 44px">
         <Column>
-          <Paragraph
-            fontSize="12px"
-            fontWeight={700}
-            color={bannerForeground(severity)}
-            letterSpacing="2px"
-            lineHeight="150%"
-            containerPadding="2px 10px"
-            text={severityBannerText(severity)}
-          />
-        </Column>
-      </Row>
-
-      {/* 4. Plain-language headline */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.OneColumn}
-        padding="24px 24px 8px 24px"
-      >
-        <Column>
-          <Heading
-            headingType="h1"
-            fontSize="28px"
-            fontWeight={700}
-            color={COLORS.ink}
-            lineHeight="120%"
-            containerPadding="0px 10px 6px 10px"
-          >
+          <Paragraph fontSize="11px" color={colors.ink} lineHeight="180%" containerPadding="0px 0px 20px 0px" html={recallBadgesHtml(incident, colors)} />
+          <Heading headingType="h1" fontSize="36px" fontWeight={700} color={colors.ink} fontFamily={DISPLAY_FONT} lineHeight="112%" containerPadding="0px 0px 16px 0px">
             {escapeHtml(incident.title)}
           </Heading>
-          <Paragraph
-            fontSize="16px"
-            color={COLORS.muted}
-            lineHeight="150%"
-            containerPadding="0px 10px"
-            text={escapeHtml(risk.headline)}
-          />
+          <Paragraph fontSize="18px" color={colors.muted} lineHeight="155%" containerPadding="0px" text={escapeHtml(risk.headline)} />
         </Column>
       </Row>
 
-      {/* 5. Product image and model identification */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.TwoEqual}
-        padding="16px 24px"
-      >
-        <Column
-          backgroundColor={COLORS.paper}
-          borderRadius="4px"
-          padding="12px 8px"
-        >
-          <Image
-            src={productImageUrl}
-            altText={escapeHtml(
-              `${product.name}, model ${product.model} — a portable power bank; check the batch code on its rear label`,
-            )}
-            textAlign="center"
-          />
-          <Paragraph
-            fontSize="11px"
-            color={COLORS.muted}
-            lineHeight="150%"
-            textAlign="center"
-            containerPadding="4px 10px 0px 10px"
-            text={escapeHtml(
-              `Image unavailable? Identify ${product.name} by model ${product.model} and the batch code on its label.`,
-            )}
-          />
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="0px 44px 32px 44px">
+        <Column backgroundColor={colors.paper} borderRadius="14px" padding="24px 20px">
+          <Image src={productImageUrl} altText={escapeHtml(`${product.name}, model ${product.model} — check the batch code on its rear label`)} textAlign="center" />
+          <Paragraph fontSize="11px" color={colors.muted} lineHeight="150%" textAlign="center" containerPadding="10px 0px 0px 0px" text={escapeHtml(`Image unavailable? Identify ${product.name} by model ${product.model} and the batch code on its label.`)} />
         </Column>
-        <Column padding="0px 0px 0px 12px">
-          <Paragraph
-            fontSize="11px"
-            fontWeight={700}
-            color={COLORS.muted}
-            letterSpacing="1px"
-            lineHeight="150%"
-            containerPadding="2px 10px"
-            text="PRODUCT"
-          />
-          <Heading
-            headingType="h3"
-            fontSize="18px"
-            fontWeight={700}
-            color={COLORS.ink}
-            lineHeight="130%"
-            containerPadding="0px 10px 2px 10px"
-          >
+      </Row>
+
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="0px 44px 12px 44px">
+        <Column>
+          <Paragraph fontSize="12px" fontWeight={700} color={colors.muted} letterSpacing="1.2px" lineHeight="150%" containerPadding="0px 0px 8px 0px" text="PRODUCT" />
+          <Heading headingType="h3" fontSize="24px" fontWeight={700} color={colors.ink} fontFamily={DISPLAY_FONT} lineHeight="120%" containerPadding="0px 0px 6px 0px">
             {escapeHtml(product.name)}
           </Heading>
-          <Paragraph
-            fontSize="14px"
-            fontWeight={700}
-            color={COLORS.ink}
-            fontFamily={MONO_FONT}
-            lineHeight="150%"
-            containerPadding="0px 10px 6px 10px"
-            text={escapeHtml(`MODEL ${product.model}`)}
-          />
-          <Paragraph
-            fontSize="14px"
-            color={COLORS.muted}
-            lineHeight="150%"
-            containerPadding="0px 10px"
-            text="Compare the model and batch code on the rear product label before taking the next step."
-          />
+          <Paragraph fontSize="15px" fontWeight={700} color={colors.ink} fontFamily={MONO_FONT} lineHeight="150%" containerPadding="0px 0px 10px 0px" text={escapeHtml(`MODEL ${product.model}`)} />
+          <Paragraph fontSize="14px" color={colors.muted} lineHeight="160%" containerPadding="0px" text="Compare the model and batch code on the rear product label before taking the next step." />
         </Column>
       </Row>
 
-      {/* 6. Batch plate — signature element */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.OneColumn}
-        padding="8px 24px 16px 24px"
-      >
-        <Column
-          backgroundColor={COLORS.ink}
-          borderRadius="4px"
-          padding="20px 24px"
-        >
-          <Paragraph
-            fontSize="11px"
-            fontWeight={700}
-            color={PLATE_MUTED}
-            letterSpacing="2px"
-            lineHeight="150%"
-            containerPadding="0px 0px 4px 0px"
-            text="AFFECTED BATCHES"
-          />
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="12px 44px 36px 44px">
+        <Column backgroundColor={colors.ink} borderRadius="14px" padding="28px 32px">
+          <Paragraph fontSize="12px" fontWeight={700} color={PLATE_MUTED} letterSpacing="2px" lineHeight="150%" containerPadding="0px 0px 10px 0px" text="IDENTIFICATION PLATE · AFFECTED BATCHES" />
           {product.affectedBatches.map((batch) => (
-            <Heading
-              key={batch}
-              headingType="h3"
-              fontSize="22px"
-              fontWeight={700}
-              color={COLORS.surface}
-              fontFamily={MONO_FONT}
-              lineHeight="140%"
-              containerPadding="2px 0px"
-            >
+            <Heading key={batch} headingType="h3" fontSize="26px" fontWeight={700} color={colors.surface} fontFamily={MONO_FONT} lineHeight="140%" containerPadding="4px 0px">
               {escapeHtml(batch)}
             </Heading>
           ))}
-          <Divider
-            borderTopWidth="1px"
-            borderTopColor={PLATE_RULE}
-            containerPadding="10px 0px 8px 0px"
-          />
-          <Paragraph
-            fontSize="12px"
-            color={PLATE_MUTED}
-            fontFamily={MONO_FONT}
-            lineHeight="150%"
-            containerPadding="0px"
-            text={escapeHtml(
-              `MODEL ${product.model} · RECALL ${incident.id}`,
-            )}
-          />
+          <Divider borderTopWidth="1px" borderTopColor={PLATE_RULE} containerPadding="14px 0px 10px 0px" />
+          <Paragraph fontSize="11px" color={PLATE_MUTED} fontFamily={MONO_FONT} lineHeight="150%" containerPadding="0px" text={escapeHtml(`MODEL ${product.model} · RECALL ${incident.id}`)} />
         </Column>
       </Row>
 
-      {/* 7. Risk summary — paper panel, severity-colored rule */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.OneColumn}
-        padding="0px 24px 8px 24px"
-      >
-        <Column
-          backgroundColor={COLORS.paper}
-          border={{
-            borderLeftWidth: '3px',
-            borderLeftStyle: 'solid',
-            borderLeftColor: severityColor(severity),
-          }}
-          padding="16px 20px"
-        >
-          <Paragraph
-            fontSize="11px"
-            fontWeight={700}
-            color={COLORS.muted}
-            letterSpacing="1px"
-            lineHeight="150%"
-            containerPadding="0px 0px 6px 0px"
-            text="RISK SUMMARY"
-          />
-          <Paragraph
-            fontSize="16px"
-            color={COLORS.ink}
-            lineHeight="155%"
-            containerPadding="0px"
-            text={escapeHtml(risk.description)}
-          />
-          {reportSummary && (
-            <Paragraph
-              fontSize="13px"
-              fontWeight={700}
-              color={hasInjuries ? COLORS.critical : COLORS.muted}
-              lineHeight="150%"
-              containerPadding="8px 0px 0px 0px"
-              text={escapeHtml(reportSummary)}
-            />
-          )}
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="0px 44px 36px 44px">
+        <Column backgroundColor={colors.paper} border={{ borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: severityColor(incident.severity) }} borderRadius="12px" padding="24px 28px">
+          <Paragraph fontSize="12px" fontWeight={700} color={colors.muted} letterSpacing="1.4px" lineHeight="150%" containerPadding="0px 0px 10px 0px" text="RISK SUMMARY" />
+          <Paragraph fontSize="16px" color={colors.ink} lineHeight="165%" containerPadding="0px" text={escapeHtml(risk.description)} />
         </Column>
       </Row>
 
-      {/* 8a. Immediate action callout */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.OneColumn}
-        padding="8px 24px 0px 24px"
-      >
-        <Column
-          border={{
-            borderLeftWidth: '3px',
-            borderLeftStyle: 'solid',
-            borderLeftColor: COLORS.critical,
-          }}
-          padding="4px 20px"
-        >
-          <Paragraph
-            fontSize="11px"
-            fontWeight={700}
-            color={COLORS.critical}
-            letterSpacing="1px"
-            lineHeight="150%"
-            containerPadding="0px 0px 4px 0px"
-            text="IMMEDIATE ACTION REQUIRED"
-          />
-          <Paragraph
-            fontSize="16px"
-            color={COLORS.ink}
-            lineHeight="155%"
-            containerPadding="0px"
-            html={`<b>${escapeHtml(action.immediateInstruction)}</b>`}
-          />
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="0px 44px 8px 44px">
+        <Column border={{ borderLeftWidth: '4px', borderLeftStyle: 'solid', borderLeftColor: colors.critical }} padding="0px 24px">
+          <Paragraph fontSize="12px" fontWeight={700} color={colors.critical} letterSpacing="1.4px" lineHeight="150%" containerPadding="0px 0px 10px 0px" text="IMMEDIATE ACTION REQUIRED" />
+          <Paragraph fontSize="18px" color={colors.ink} lineHeight="160%" containerPadding="0px" html={`<b>${escapeHtml(action.immediateInstruction)}</b>`} />
         </Column>
       </Row>
 
-      {/* 8b. Numbered steps */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.OneColumn}
-        padding="16px 24px"
-      >
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="24px 44px 36px 44px">
         <Column>
-          <Heading
-            headingType="h2"
-            fontSize="18px"
-            fontWeight={700}
-            color={COLORS.ink}
-            lineHeight="130%"
-            containerPadding="0px 10px 6px 10px"
-          >
+          <Heading headingType="h2" fontSize="22px" fontWeight={700} color={colors.ink} fontFamily={DISPLAY_FONT} lineHeight="130%" containerPadding="0px 0px 18px 0px">
             What you need to do
           </Heading>
           {action.steps.map((step, index) => (
-            <Paragraph
-              key={`${index}-${step}`}
-              fontSize="16px"
-              color={COLORS.ink}
-              lineHeight="155%"
-              containerPadding="5px 10px"
-              html={`${stepNumeral(index)}&nbsp; ${escapeHtml(step)}`}
-            />
+            <Paragraph key={`${index}-${step}`} fontSize="16px" color={colors.ink} lineHeight="170%" containerPadding="10px 0px" html={`${stepNumeral(index, colors)}&nbsp;&nbsp;${escapeHtml(step)}`} />
           ))}
         </Column>
       </Row>
 
-      {/* 9. Remedy panel — paper with ink top rule */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.OneColumn}
-        padding="0px 24px 8px 24px"
-      >
-        <Column
-          backgroundColor={COLORS.paper}
-          border={{
-            borderTopWidth: '3px',
-            borderTopStyle: 'solid',
-            borderTopColor: COLORS.ink,
-          }}
-          padding="16px 20px"
-        >
-          <Paragraph
-            fontSize="11px"
-            fontWeight={700}
-            color={COLORS.safe}
-            letterSpacing="1px"
-            lineHeight="150%"
-            containerPadding="0px 0px 4px 0px"
-            text="YOUR REMEDY"
-          />
-          <Heading
-            headingType="h3"
-            fontSize="18px"
-            fontWeight={700}
-            color={COLORS.ink}
-            lineHeight="130%"
-            containerPadding="0px 0px 4px 0px"
-          >
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="0px 44px 20px 44px">
+        <Column backgroundColor={colors.paper} border={{ borderTopWidth: '4px', borderTopStyle: 'solid', borderTopColor: colors.accent }} borderRadius="12px" padding="28px 28px">
+          <Paragraph fontSize="12px" fontWeight={700} color={colors.safe} letterSpacing="1.4px" lineHeight="150%" containerPadding="0px 0px 8px 0px" text="YOUR REMEDY" />
+          <Heading headingType="h3" fontSize="21px" fontWeight={700} color={colors.ink} fontFamily={DISPLAY_FONT} lineHeight="130%" containerPadding="0px 0px 10px 0px">
             {`${remedyLabel(action.remedyType)} available`}
           </Heading>
-          <Paragraph
-            fontSize="16px"
-            color={COLORS.ink}
-            lineHeight="155%"
-            containerPadding="0px 0px 10px 0px"
-            text={escapeHtml(action.remedyDescription)}
-          />
-          <Paragraph
-            fontSize="11px"
-            fontWeight={700}
-            color={COLORS.muted}
-            letterSpacing="1px"
-            lineHeight="150%"
-            containerPadding="0px 0px 4px 0px"
-            text="RETURN INSTRUCTIONS"
-          />
-          <Paragraph
-            fontSize="14px"
-            color={COLORS.ink}
-            lineHeight="155%"
-            containerPadding="0px"
-            text={escapeHtml(action.returnInstructions)}
-          />
+          <Paragraph fontSize="16px" color={colors.ink} lineHeight="165%" containerPadding="0px 0px 18px 0px" text={escapeHtml(action.remedyDescription)} />
+          <Paragraph fontSize="12px" fontWeight={700} color={colors.muted} letterSpacing="1.4px" lineHeight="150%" containerPadding="0px 0px 8px 0px" text="RETURN INSTRUCTIONS" />
+          <Paragraph fontSize="15px" color={colors.ink} lineHeight="165%" containerPadding="0px" text={escapeHtml(action.returnInstructions)} />
           {hasDeadline(action) && (
-            <Paragraph
-              fontSize="14px"
-              fontWeight={700}
-              color={COLORS.ink}
-              lineHeight="150%"
-              containerPadding="10px 0px 0px 0px"
-              text={escapeHtml(
-                `Respond by ${formatDate(action.responseDeadline!)}`,
-              )}
-            />
+            <Paragraph fontSize="15px" fontWeight={700} color={colors.ink} lineHeight="150%" containerPadding="16px 0px 0px 0px" text={escapeHtml(`Respond by ${formatDate(action.responseDeadline!)}`)} />
           )}
         </Column>
       </Row>
 
-      {/* 10. Primary verification call to action */}
-      <Row
-        backgroundColor={COLORS.surface}
-        layout={ColumnLayouts.OneColumn}
-        padding="8px 24px 24px 24px"
-      >
+      <Row backgroundColor={colors.surface} layout={ColumnLayouts.OneColumn} padding="8px 44px 44px 44px">
         <Column>
-          <Button
-            href={verificationUrl}
-            backgroundColor={COLORS.ink}
-            color={COLORS.surface}
-            borderRadius="4px"
-            fontSize="16px"
-            fontWeight={700}
-            padding="14px 24px"
-            textAlign="center"
-            width="100%"
-          >
+          <Button href={verificationUrl} backgroundColor={colors.accent} color={colors.surface} borderRadius="10px" fontSize="16px" fontWeight={700} padding="16px 28px" textAlign="center" width="100%">
             Check my product
           </Button>
-          <Paragraph
-            fontSize="12px"
-            color={COLORS.muted}
-            lineHeight="150%"
-            textAlign="center"
-            containerPadding="8px 10px 0px 10px"
-            text="Have your batch code ready — checking takes about a minute."
-          />
         </Column>
       </Row>
 
-      {/* 11. Support details */}
-      <Row
-        backgroundColor={COLORS.paper}
-        layout={ColumnLayouts.OneColumn}
-        padding="24px 24px"
-      >
+      <Row backgroundColor={colors.paper} layout={ColumnLayouts.OneColumn} padding="36px 44px">
         <Column>
-          <Heading
-            headingType="h3"
-            fontSize="16px"
-            fontWeight={700}
-            color={COLORS.ink}
-            lineHeight="130%"
-            containerPadding="0px 10px 6px 10px"
-          >
+          <Heading headingType="h3" fontSize="17px" fontWeight={700} color={colors.ink} fontFamily={DISPLAY_FONT} lineHeight="130%" containerPadding="0px 0px 12px 0px">
             Need help?
           </Heading>
-          <Paragraph
-            fontSize="14px"
-            color={COLORS.ink}
-            lineHeight="165%"
-            containerPadding="2px 10px"
-            html={`<b>Phone:</b> <a href="${escapeHtml(phoneHref)}">${escapeHtml(company.supportPhone)}</a>`}
-          />
-          <Paragraph
-            fontSize="14px"
-            color={COLORS.ink}
-            lineHeight="165%"
-            containerPadding="2px 10px"
-            html={`<b>Email:</b> <a href="${escapeHtml(emailHref)}">${escapeHtml(company.supportEmail)}</a>`}
-          />
-          <Paragraph
-            fontSize="14px"
-            color={COLORS.ink}
-            lineHeight="165%"
-            containerPadding="2px 10px"
-            html={`<b>Hours:</b> ${escapeHtml(company.supportHours)}`}
-          />
-          <Paragraph
-            fontSize="13px"
-            color={COLORS.muted}
-            lineHeight="160%"
-            containerPadding="8px 10px 0px 10px"
-            text={escapeHtml(company.returnInstructions)}
-          />
+          <Paragraph fontSize="15px" color={colors.ink} lineHeight="175%" containerPadding="4px 0px" html={`<b>Phone:</b> <a href="${escapeHtml(phoneHref)}">${escapeHtml(company.supportPhone)}</a>`} />
+          <Paragraph fontSize="15px" color={colors.ink} lineHeight="175%" containerPadding="4px 0px" html={`<b>Email:</b> <a href="${escapeHtml(emailHref)}">${escapeHtml(company.supportEmail)}</a>`} />
         </Column>
       </Row>
 
-      {/* 12. Legal / disclaimer footer */}
-      <Row
-        backgroundColor={COLORS.ink}
-        layout={ColumnLayouts.OneColumn}
-        padding="24px 24px"
-      >
+      <Row backgroundColor={colors.ink} layout={ColumnLayouts.OneColumn} padding="28px 44px">
         <Column>
-          <Paragraph
-            fontSize="12px"
-            fontWeight={700}
-            color={COLORS.surface}
-            lineHeight="150%"
-            containerPadding="0px 10px 4px 10px"
-            text={escapeHtml(company.name)}
-          />
-          <Paragraph
-            fontSize="11px"
-            color={FOOTER_TEXT}
-            lineHeight="160%"
-            containerPadding="0px 10px 4px 10px"
-            text="This is a fictional recall scenario created for demonstration purposes. No real products, companies, or safety incidents are represented."
-          />
-          <Paragraph
-            fontSize="11px"
-            color={FOOTER_TEXT}
-            fontFamily={MONO_FONT}
-            lineHeight="160%"
-            containerPadding="0px 10px"
-            text={escapeHtml(
-              `LAST UPDATED ${formatDate(incident.updatedAt)} · RECALL ${incident.id}`,
-            )}
-          />
+          <Paragraph fontSize="12px" color={FOOTER_TEXT} lineHeight="165%" containerPadding="0px 0px 8px 0px" text="This is a fictional recall scenario created for demonstration purposes. No real products, companies, or safety incidents are represented." />
+          <Paragraph fontSize="11px" color={FOOTER_TEXT} fontFamily={MONO_FONT} lineHeight="160%" containerPadding="0px" text={escapeHtml(`LAST UPDATED ${formatDate(incident.updatedAt)} · RECALL ${incident.id}`)} />
         </Column>
       </Row>
     </Email>

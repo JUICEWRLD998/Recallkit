@@ -7,3 +7,4 @@ export { OrderableList } from './OrderableList';
 export { Accordion } from './Accordion';
 export { ConfirmDialog } from './ConfirmDialog';
 export { StatusBadge } from './StatusBadge';
+export { ImageUpload } from './ImageUpload';

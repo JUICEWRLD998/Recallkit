@@ -1,11 +1,20 @@
 .panel {
   display: flex;
   flex-direction: column;
-  padding: 8px 20px 48px;
+  padding: 0 20px 48px;
+}
+
+.intro {
+  margin: 0 0 8px;
+  padding: 16px 2px 12px;
+  color: var(--text-faint);
+  font-size: 13px;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 @media (max-width: 620px) {
   .panel {
-    padding: 4px 12px 32px;
+    padding: 0 14px 36px;
   }
 }

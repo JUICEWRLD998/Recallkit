@@ -1,5 +1,4 @@
 import { useRef } from 'react';
-import { ChevronUp, ChevronDown, Trash2, Plus } from 'lucide-react';
 import { Input } from './Input';
 import styles from './OrderableList.module.css';
 
@@ -28,7 +27,6 @@ export function OrderableList({
 }: OrderableListProps) {
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Keep keyboard focus on the moved row after a reorder re-render.
   const moveAndFollow = (from: number, to: number, action: 'up' | 'down') => {
     onReorder(from, to);
     requestAnimationFrame(() => {
@@ -59,9 +57,8 @@ export function OrderableList({
               onClick={() => moveAndFollow(index, index - 1, 'up')}
               disabled={index === 0}
               aria-label={`Move ${itemLabel.toLowerCase()} ${index + 1} up`}
-              title="Move up"
             >
-              <ChevronUp size={16} />
+              Up
             </button>
             <button
               type="button"
@@ -69,9 +66,8 @@ export function OrderableList({
               onClick={() => moveAndFollow(index, index + 1, 'down')}
               disabled={index === items.length - 1}
               aria-label={`Move ${itemLabel.toLowerCase()} ${index + 1} down`}
-              title="Move down"
             >
-              <ChevronDown size={16} />
+              Down
             </button>
             <button
               type="button"
@@ -79,15 +75,13 @@ export function OrderableList({
               onClick={() => onRemove(index)}
               disabled={items.length <= minItems}
               aria-label={`Remove ${itemLabel.toLowerCase()} ${index + 1}`}
-              title="Remove"
             >
-              <Trash2 size={16} />
+              Remove
             </button>
           </div>
         </div>
       ))}
       <button type="button" className={styles.addButton} onClick={onAdd}>
-        <Plus size={16} />
         {addLabel}
       </button>
     </div>

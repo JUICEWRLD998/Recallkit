@@ -8,6 +8,10 @@ export const sampleIncident: RecallIncident = {
   updatedAt: '2026-07-22T00:00:00',
   severity: 'high',
   status: 'active',
+  theme: {
+    accent: '#5B45C9',
+    ink: '#14141F',
+  },
   company: {
     name: 'Northline Devices',
     supportEmail: 'safety@northlinedevices.example',
@@ -15,7 +19,7 @@ export const sampleIncident: RecallIncident = {
     supportHours: 'Monday–Friday 8 AM–8 PM ET',
     verificationUrl: 'https://northlinedevices.example/recalls/RK-2026-071',
     returnInstructions:
-      'Request a prepaid return label at the verification link above or by calling support. Package the unit in its original box or a padded mailer and drop it at any major carrier location.',
+      'Request a prepaid return label at the verification link or by calling support. Package the unit and drop it at any major carrier location.',
   },
   product: {
     name: 'Arc 20K Power Bank',
@@ -30,25 +34,23 @@ export const sampleIncident: RecallIncident = {
   risk: {
     headline: 'Battery may overheat while charging',
     description:
-      'A component defect in certain production batches can cause the lithium-ion cell to overheat during USB-C charging. In rare cases the unit may swell, emit smoke, or ignite. The defect does not affect units while idle or discharging.',
+      'Certain batches may overheat during USB-C charging. In rare cases the unit may swell, emit smoke, or ignite.',
     reportedIncidents: 14,
     reportedInjuries: 2,
   },
   action: {
     immediateInstruction:
-      'Stop using the power bank immediately. Disconnect it from any power source and do not charge or discharge it.',
+      'Stop using the power bank immediately. Disconnect it from any power source.',
     steps: [
       'Disconnect the power bank from all cables and devices.',
-      'Check the batch identifier on the rear label against the affected list.',
-      'If your batch is affected, stop using the unit entirely.',
-      'Visit the verification link or call support to request a prepaid return label.',
-      'Package the unit and ship it using the prepaid label.',
+      'Check the batch code on the rear label against the affected list.',
+      'If affected, request a prepaid return label via the link below or by phone.',
     ],
     remedyType: 'replacement',
     remedyDescription:
-      'Northline Devices will provide a free replacement Arc 20K from a corrected production batch. Alternatively, customers may request a full refund of the purchase price.',
+      'Free replacement from a corrected batch, or a full refund — your choice.',
     responseDeadline: '2026-10-31T00:00:00',
     returnInstructions:
-      'Request a prepaid return label at the verification link or by calling support. Package the unit in its original box or a padded mailer and drop it at any major carrier location.',
+      'Request a prepaid return label at the verification link or by calling support. Package the unit and drop it at any major carrier location.',
   },
 }

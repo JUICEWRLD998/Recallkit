@@ -1,36 +1,36 @@
 .plate {
   display: flex;
   flex-direction: column;
-  border: 1.5px solid var(--ink);
-  border-radius: 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--surface);
+  background: var(--surface-0);
 }
 
 .row {
   display: flex;
   align-items: stretch;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .rowIndex {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
+  width: 36px;
   flex-shrink: 0;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
-  color: var(--surface);
-  background: var(--ink);
+  color: var(--text-faint);
+  background: var(--surface-2);
 }
 
 .plateInput {
   flex: 1;
   min-width: 0;
-  height: 38px;
-  padding: 0 10px;
+  height: 40px;
+  padding: 0 12px;
   border: none;
   background: transparent;
   font-family: var(--font-mono);
@@ -38,17 +38,16 @@
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--text-primary);
 }
 
 .plateInput::placeholder {
-  color: var(--muted);
-  font-weight: 400;
+  color: var(--text-faint);
+  font-weight: 450;
   text-transform: none;
   letter-spacing: 0;
 }
 
-/* 16px floor prevents iOS Safari auto-zoom on focus */
 @media (max-width: 880px) {
   .plateInput {
     font-size: 16px;
@@ -57,7 +56,7 @@
 
 .plateInput:focus {
   outline: none;
-  background: rgb(0 124 120 / 6%);
+  background: var(--accent-muted);
 }
 
 .plateInput:focus-visible {
@@ -69,13 +68,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
+  min-width: 64px;
+  padding: 0 10px;
   border: none;
-  border-left: 1px solid var(--line);
+  border-left: 1px solid var(--border-subtle);
   background: transparent;
   cursor: pointer;
-  color: var(--muted);
-  padding: 0;
+  color: var(--text-faint);
+  font-size: 11px;
+  font-weight: 600;
   flex-shrink: 0;
   opacity: 0;
   transition: opacity 0.15s ease, color 0.15s ease;
@@ -93,33 +94,27 @@
 
 .removeButton:disabled {
   cursor: not-allowed;
-  color: var(--line-strong);
+  opacity: 0.35;
 }
 
 .addButton {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 36px;
+  height: 38px;
   border: none;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 13px;
-  font-weight: 560;
-  background: var(--paper);
+  font-weight: 600;
+  background: var(--surface-2);
   cursor: pointer;
   width: 100%;
   transition: color 0.15s ease, background 0.15s ease;
 }
 
 .addButton:hover {
-  color: var(--ink);
-  background: var(--surface);
-}
-
-.addButton:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: -3px;
+  color: var(--text-primary);
+  background: var(--surface-3);
 }
 
 @media (prefers-reduced-motion: reduce) {

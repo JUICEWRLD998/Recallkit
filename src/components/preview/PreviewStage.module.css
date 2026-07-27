@@ -8,104 +8,62 @@
 .toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 48px;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 52px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-1);
   flex-shrink: 0;
 }
 
 .stageTitle {
-  font-size: 13px;
-  font-weight: 640;
-  color: var(--ink);
-  margin-right: auto;
-  white-space: nowrap;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  min-width: 0;
-}
-
-.widthReadout {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--muted);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
 }
 
 .widthControls {
   display: flex;
-  border: 1px solid var(--line-strong);
-  border-radius: 6px;
-  overflow: hidden;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-0);
   flex-shrink: 0;
 }
 
 .widthButton {
-  width: 34px;
-  height: 30px;
+  min-height: 30px;
+  padding: 0 10px;
   border: none;
-  background: var(--surface);
+  border-radius: 6px;
+  color: var(--text-faint);
+  background: transparent;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
-  display: grid;
-  place-items: center;
-  color: var(--muted);
-  padding: 0;
-  transition: color 0.15s ease, background 0.15s ease;
-}
-
-.widthButton + .widthButton {
-  border-left: 1px solid var(--line);
+  transition: color var(--dur-2) var(--ease-ui), background-color var(--dur-2) var(--ease-ui);
 }
 
 .widthButton:hover {
-  color: var(--ink);
-}
-
-.widthButton:focus-visible {
-  outline: var(--focus-ring);
-  outline-offset: -3px;
+  color: var(--text-primary);
+  background: var(--surface-3);
 }
 
 .active {
-  background: var(--ink);
-  color: var(--surface);
-}
-
-.active + .widthButton {
-  border-left-color: transparent;
-}
-
-.paperLabel {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0;
-}
-
-@media (hover: none) {
-  .widthButton {
-    width: 44px;
-    height: 40px;
-  }
+  color: var(--text-primary);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
 }
 
 @media (max-width: 620px) {
   .toolbar {
     padding: 0 12px;
-    gap: 8px;
-  }
-
-  .widthReadout {
-    display: none;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .widthButton {
-    transition: none;
   }
 }

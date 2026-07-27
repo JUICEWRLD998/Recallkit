@@ -13,10 +13,11 @@ const DOCUMENT_STYLES = `
   .rk-keep, .rk-plate, .rk-line { break-inside: avoid; page-break-inside: avoid; }
   @page { size: auto; margin: 12mm; }
   @media screen {
-    html { background: #dfe4e2; padding: 20px 0; }
+    html { background: transparent; padding: 0; }
     body {
       width: var(--bulletin-page-width) !important;
-      min-height: var(--bulletin-page-height);
+      min-height: auto !important;
+      height: auto !important;
       margin: 0 auto !important;
       background: #ffffff !important;
       box-shadow: 0 2px 16px rgba(23, 32, 30, 0.18);

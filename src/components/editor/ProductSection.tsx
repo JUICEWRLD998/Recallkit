@@ -2,7 +2,7 @@ import type { RecallIncident } from '../../domain/recall-schema';
 import type { RecallAction } from '../../domain/recall-reducer';
 import type { ValidationErrors } from '../../domain/recall-validation';
 import { fieldError } from '../../domain/recall-validation';
-import { Accordion, FormField, Input, RepeatableList } from '../ui';
+import { Accordion, FormField, Input, RepeatableList, ImageUpload } from '../ui';
 import styles from './ProductSection.module.css';
 
 interface ProductSectionProps {
@@ -16,7 +16,7 @@ export function ProductSection({ incident, dispatch, errors = {} }: ProductSecti
     <Accordion title="Product" defaultOpen>
       <div className={styles.fields}>
         <FormField
-          label="Company name"
+          label="Company"
           htmlFor="field-company-name"
           error={errors['company.name']}
           required
@@ -48,7 +48,7 @@ export function ProductSection({ incident, dispatch, errors = {} }: ProductSecti
         </FormField>
 
         <FormField
-          label="Model"
+          label="Model number"
           htmlFor="field-product-model"
           error={errors['product.model']}
           required
@@ -65,15 +65,15 @@ export function ProductSection({ incident, dispatch, errors = {} }: ProductSecti
         </FormField>
 
         <FormField
-          label="Product image URL"
-          htmlFor="field-product-image-url"
+          label="Product photo"
+          htmlFor="field-product-image"
           error={errors['product.imageUrl']}
         >
-          <Input
-            id="field-product-image-url"
+          <ImageUpload
+            id="field-product-image"
             value={incident.product.imageUrl}
-            onChange={(e) =>
-              dispatch({ type: 'SET_FIELD', path: ['product', 'imageUrl'], value: e.target.value })
+            onChange={(dataUrl) =>
+              dispatch({ type: 'SET_FIELD', path: ['product', 'imageUrl'], value: dataUrl })
             }
           />
         </FormField>
@@ -91,7 +91,7 @@ export function ProductSection({ incident, dispatch, errors = {} }: ProductSecti
               dispatch({ type: 'UPDATE_BATCH', index, value: value.toUpperCase() })
             }
             addLabel="Add batch"
-            placeholder="e.g. A20-2604-17"
+            placeholder="A20-2604-17"
             minItems={1}
           />
         </FormField>

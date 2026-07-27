@@ -19,6 +19,7 @@ import { PublicRecallNotice } from './templates'
 
 type ActiveOutput = 'email' | 'document' | 'page'
 type SaveStatus = 'saved' | 'unsaved' | 'error'
+type Theme = 'dark' | 'light'
 
 function App() {
   const [incident, baseDispatch] = useReducer(recallReducer, undefined, loadIncident)
@@ -26,10 +27,23 @@ function App() {
   const [activeOutput, setActiveOutput] = useState<ActiveOutput>('email')
   const [resetDialogOpen, setResetDialogOpen] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
+  const [theme, setTheme] = useState<Theme>(() =>
+    document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
+  )
   const saveTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
   const exportErrorTimerRef = useRef<ReturnType<typeof setTimeout>>(null)
   const incidentRef = useRef(incident)
   const statusRef = useRef(status)
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
+    try {
+      localStorage.setItem('recallkit:theme', theme)
+    } catch {
+      // The selected theme still applies when storage is unavailable.
+    }
+  }, [theme])
 
   useEffect(() => {
     incidentRef.current = incident
@@ -177,17 +191,6 @@ function App() {
     }
   }, [validateForExport, activeOutput, incident, showExportError])
 
-  const handleExportCase = useCallback(() => {
-    if (!validateForExport()) return false
-    try {
-      downloadText(JSON.stringify(incident, null, 2), exportFilename('case', incident.id, 'json'), 'application/json')
-      return true
-    } catch {
-      showExportError('Case export failed. Your draft is unaffected.')
-      return false
-    }
-  }, [validateForExport, incident, showExportError])
-
   const handlePrint = useCallback(() => {
     if (!validateForExport()) return
     if (!documentRender.ok) {
@@ -233,7 +236,6 @@ function App() {
             onReset={() => setResetDialogOpen(true)}
             onExportHtml={handleExportHtml}
             onExportJson={handleExportJson}
-            onExportCase={handleExportCase}
             onCopyHtml={handleCopyHtml}
             onPrint={handlePrint}
             exportDisabled={!incidentValid}
@@ -241,6 +243,8 @@ function App() {
             exportError={exportError}
             recallId={incident.id}
             severity={incident.severity}
+            theme={theme}
+            onToggleTheme={() => setTheme((current) => current === 'dark' ? 'light' : 'dark')}
           />
         }
         tabs={<OutputTabs activeOutput={activeOutput} onChange={setActiveOutput} />}

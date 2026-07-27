@@ -1,0 +1,79 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.preview {
+  display: grid;
+  place-items: center;
+  min-height: 120px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-0);
+  overflow: hidden;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+}
+
+.placeholder {
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.primary,
+.secondary {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--dur-2) var(--ease-ui), border-color var(--dur-2) var(--ease-ui);
+}
+
+.primary {
+  color: var(--text-primary);
+  background: var(--accent-muted);
+  border: 1px solid oklch(0.63 0.19 285 / 0.28);
+}
+
+.primary:hover {
+  background: oklch(0.63 0.19 285 / 0.22);
+}
+
+.secondary {
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+}
+
+.secondary:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.hint {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}

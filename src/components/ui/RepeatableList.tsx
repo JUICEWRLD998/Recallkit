@@ -1,4 +1,3 @@
-import { Trash2, Plus } from 'lucide-react';
 import styles from './RepeatableList.module.css';
 
 interface RepeatableListProps {
@@ -42,14 +41,12 @@ export function RepeatableList({
             onClick={() => onRemove(index)}
             disabled={items.length <= minItems}
             aria-label={`Remove batch ${index + 1}`}
-            title={`Remove batch ${index + 1}`}
           >
-            <Trash2 size={15} />
+            Remove
           </button>
         </div>
       ))}
       <button type="button" className={styles.addButton} onClick={onAdd}>
-        <Plus size={15} />
         {addLabel}
       </button>
     </div>

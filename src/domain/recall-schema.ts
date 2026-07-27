@@ -9,6 +9,15 @@ export type RecallStatus = z.infer<typeof recallStatusSchema>
 export const remedyTypeSchema = z.enum(['refund', 'replacement', 'repair'])
 export type RemedyType = z.infer<typeof remedyTypeSchema>
 
+const hexColorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/)
+
+export const templateThemeSchema = z.object({
+  accent: hexColorSchema,
+  ink: hexColorSchema,
+})
+
+export type TemplateTheme = z.infer<typeof templateThemeSchema>
+
 export const recallIncidentSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
@@ -16,6 +25,10 @@ export const recallIncidentSchema = z.object({
   updatedAt: z.iso.datetime({ local: true }),
   severity: recallSeveritySchema,
   status: recallStatusSchema,
+  theme: templateThemeSchema.default({
+    accent: '#5B45C9',
+    ink: '#14141F',
+  }),
   company: z.object({
     name: z.string().min(1),
     supportEmail: z.email(),

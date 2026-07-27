@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styles from './PreviewFrame.module.css';
 
 type PreviewVariant = 'email' | 'document' | 'page';
@@ -17,11 +17,6 @@ const variantClass: Record<PreviewVariant, string> = {
   page: 'sheetPage',
 };
 
-/**
- * Debounce srcDoc updates so the iframe reloads calmly instead of on every
- * keystroke. The first value renders immediately; later values settle after
- * a short pause in typing.
- */
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
 
@@ -33,6 +28,21 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
   return debounced;
 }
 
+function resizeIframe(iframe: HTMLIFrameElement) {
+  try {
+    const doc = iframe.contentDocument;
+    if (!doc?.body) return;
+
+    iframe.style.height = '0px';
+    const height = Math.ceil(doc.body.getBoundingClientRect().height);
+    if (height > 0) {
+      iframe.style.height = `${height}px`;
+    }
+  } catch {
+    // Sandbox edge cases — keep default height.
+  }
+}
+
 export function PreviewFrame({
   html,
   title,
@@ -40,9 +50,19 @@ export function PreviewFrame({
   allowScripts = false,
   variant = 'email',
 }: PreviewFrameProps) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const iframeWidth = width === '100%' ? '100%' : `${width}px`;
   const fullBleed = width === '100%';
   const debouncedHtml = useDebouncedValue(html, 250);
+
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const handleLoad = () => resizeIframe(iframe);
+    iframe.addEventListener('load', handleLoad);
+    return () => iframe.removeEventListener('load', handleLoad);
+  }, [debouncedHtml]);
 
   return (
     <div className={`${styles.container}${fullBleed ? ` ${styles.containerFull}` : ''}`}>
@@ -51,6 +71,7 @@ export function PreviewFrame({
         style={{ width: iframeWidth, maxWidth: '100%' }}
       >
         <iframe
+          ref={iframeRef}
           className={styles.frame}
           srcDoc={debouncedHtml}
           title={`Preview of ${title}`}

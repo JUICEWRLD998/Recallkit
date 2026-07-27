@@ -1,5 +1,4 @@
 import { useId, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
 import styles from './Accordion.module.css';
 
 interface AccordionProps {
@@ -22,10 +21,9 @@ export function Accordion({ title, defaultOpen = false, children }: AccordionPro
         aria-controls={contentId}
       >
         <span className={styles.title}>{title}</span>
-        <ChevronDown
-          size={18}
-          className={`${styles.chevron}${open ? ` ${styles.chevronOpen}` : ''}`}
-        />
+        <span className={`${styles.indicator}${open ? ` ${styles.indicatorOpen}` : ''}`} aria-hidden="true">
+          {open ? '−' : '+'}
+        </span>
       </button>
       {open && (
         <div id={contentId} className={styles.content}>

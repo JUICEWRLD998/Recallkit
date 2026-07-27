@@ -1,54 +1,47 @@
 .accordion {
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .header {
+  width: 100%;
+  min-height: 52px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 52px;
-  padding: 0;
+  padding: 0 2px;
   border: none;
-  cursor: pointer;
+  color: var(--text-secondary);
   background: transparent;
-  width: 100%;
   text-align: left;
-  color: var(--ink);
-  transition: background 0.15s ease;
+  cursor: pointer;
+  transition: color var(--dur-2) var(--ease-ui);
 }
 
 .header:hover {
-  background: var(--paper);
-}
-
-.header:hover .chevron {
-  color: var(--ink);
+  color: var(--text-primary);
 }
 
 .title {
   font-size: 12px;
-  font-weight: 640;
-  letter-spacing: 0.07em;
+  font-weight: 650;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.chevron {
-  color: var(--muted);
-  transition: transform 0.15s ease;
+.indicator {
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1;
   flex-shrink: 0;
 }
 
-.chevronOpen {
-  transform: rotate(180deg);
+.header:hover .indicator,
+.indicatorOpen {
+  color: var(--accent);
 }
 
 .content {
-  padding: 4px 0 24px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .header,
-  .chevron {
-    transition: none;
-  }
+  padding: 4px 2px 24px;
 }

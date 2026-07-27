@@ -1,7 +1,7 @@
 import type { RecallIncident } from '../../domain/recall-schema';
 import type { RecallAction } from '../../domain/recall-reducer';
 import type { ValidationErrors } from '../../domain/recall-validation';
-import { Accordion, FormField, Input, Textarea } from '../ui';
+import { Accordion, FormField, Input } from '../ui';
 import styles from './SupportSection.module.css';
 
 interface SupportSectionProps {
@@ -12,10 +12,10 @@ interface SupportSectionProps {
 
 export function SupportSection({ incident, dispatch, errors = {} }: SupportSectionProps) {
   return (
-    <Accordion title="Support" defaultOpen={false}>
+    <Accordion title="Contact" defaultOpen={false}>
       <div className={styles.fields}>
         <FormField
-          label="Verification URL"
+          label="Verification page"
           htmlFor="field-verification-url"
           error={errors['company.verificationUrl']}
           required
@@ -71,46 +71,6 @@ export function SupportSection({ incident, dispatch, errors = {} }: SupportSecti
               dispatch({
                 type: 'SET_FIELD',
                 path: ['company', 'supportEmail'],
-                value: e.target.value,
-              })
-            }
-          />
-        </FormField>
-
-        <FormField
-          label="Support hours"
-          htmlFor="field-support-hours"
-          error={errors['company.supportHours']}
-          required
-        >
-          <Input
-            id="field-support-hours"
-            value={incident.company.supportHours}
-            required
-            onChange={(e) =>
-              dispatch({
-                type: 'SET_FIELD',
-                path: ['company', 'supportHours'],
-                value: e.target.value,
-              })
-            }
-          />
-        </FormField>
-
-        <FormField
-          label="Return instructions"
-          htmlFor="field-company-return-instructions"
-          error={errors['company.returnInstructions']}
-          required
-        >
-          <Textarea
-            id="field-company-return-instructions"
-            value={incident.company.returnInstructions}
-            required
-            onChange={(e) =>
-              dispatch({
-                type: 'SET_FIELD',
-                path: ['company', 'returnInstructions'],
                 value: e.target.value,
               })
             }

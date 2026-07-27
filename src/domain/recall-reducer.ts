@@ -57,6 +57,18 @@ export function recallReducer(
         action.path,
         action.value,
       ) as unknown as RecallIncident
+      if (
+        action.path.length === 2 &&
+        action.path[0] === 'action' &&
+        action.path[1] === 'returnInstructions' &&
+        typeof action.value === 'string'
+      ) {
+        return {
+          ...updated,
+          company: { ...updated.company, returnInstructions: action.value },
+          updatedAt: now,
+        }
+      }
       return { ...updated, updatedAt: now }
     }
     case 'SET_SEVERITY':

@@ -3,9 +3,9 @@ import type { RecallIncident } from '../../domain/recall-schema';
 import type { RecallAction } from '../../domain/recall-reducer';
 import { validateIncident } from '../../domain/recall-validation';
 import { IncidentSection } from './IncidentSection';
+import { ThemeSection } from './ThemeSection';
 import { ProductSection } from './ProductSection';
-import { RiskSection } from './RiskSection';
-import { ActionSection } from './ActionSection';
+import { ResponseSection } from './ResponseSection';
 import { SupportSection } from './SupportSection';
 import styles from './EditorPanel.module.css';
 
@@ -19,10 +19,13 @@ export function EditorPanel({ incident, dispatch }: EditorPanelProps) {
 
   return (
     <div className={styles.panel}>
+      <p className={styles.intro}>
+        Edit once — preview updates across email, bulletin, and web notice.
+      </p>
       <IncidentSection incident={incident} dispatch={dispatch} errors={errors} />
+      <ThemeSection incident={incident} dispatch={dispatch} />
       <ProductSection incident={incident} dispatch={dispatch} errors={errors} />
-      <RiskSection incident={incident} dispatch={dispatch} errors={errors} />
-      <ActionSection incident={incident} dispatch={dispatch} errors={errors} />
+      <ResponseSection incident={incident} dispatch={dispatch} errors={errors} />
       <SupportSection incident={incident} dispatch={dispatch} errors={errors} />
     </div>
   );

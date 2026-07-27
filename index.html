@@ -9,6 +9,18 @@
       content="Turn one verified recall incident into a customer email, a printable retailer bulletin, and a public recall notice. Fictional demo data only."
     />
     <title>RecallKit — Recall communication studio</title>
+    <script>
+      (() => {
+        try {
+          const saved = localStorage.getItem('recallkit:theme')
+          const theme = saved === 'light' || saved === 'dark'
+            ? saved
+            : matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+          document.documentElement.dataset.theme = theme
+          document.documentElement.style.colorScheme = theme
+        } catch {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

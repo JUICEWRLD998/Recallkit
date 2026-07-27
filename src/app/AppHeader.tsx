@@ -1,14 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  RotateCcw,
-  Download,
-  FileText,
-  Briefcase,
-  Printer,
-  Copy,
-  Check,
-  AlertTriangle,
-} from 'lucide-react';
 import type { RecallSeverity } from '../domain/recall-schema';
 import { StatusBadge } from '../components/ui';
 import styles from './AppHeader.module.css';
@@ -18,7 +8,6 @@ interface AppHeaderProps {
   onReset: () => void;
   onExportHtml: () => boolean;
   onExportJson: () => boolean;
-  onExportCase: () => boolean;
   onCopyHtml: () => Promise<void>;
   onPrint: () => void;
   exportDisabled?: boolean;
@@ -26,27 +15,17 @@ interface AppHeaderProps {
   exportError?: string | null;
   recallId?: string;
   severity?: RecallSeverity;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
 }
 
 const statusText: Record<AppHeaderProps['status'], string> = {
   saved: 'Saved',
-  unsaved: 'Unsaved changes',
+  unsaved: 'Unsaved',
   error: 'Save error',
 };
 
 type CopyState = 'idle' | 'copied' | 'failed';
-
-const copyText: Record<CopyState, string> = {
-  idle: 'Copy',
-  copied: 'Copied',
-  failed: 'Failed',
-};
-
-const copyLabel: Record<CopyState, string> = {
-  idle: 'Copy HTML',
-  copied: 'HTML copied to clipboard',
-  failed: 'Copy to clipboard failed',
-};
 
 const severityTone: Record<RecallSeverity, string> = {
   critical: styles.toneCritical,
@@ -54,20 +33,11 @@ const severityTone: Record<RecallSeverity, string> = {
   advisory: styles.toneNeutral,
 };
 
-type DownloadKind = 'html' | 'json' | 'case';
-
-const downloadedLabel: Record<DownloadKind, string> = {
-  html: 'HTML file downloaded',
-  json: 'JSON file downloaded',
-  case: 'Case file downloaded',
-};
-
 export function AppHeader({
   status,
   onReset,
   onExportHtml,
   onExportJson,
-  onExportCase,
   onCopyHtml,
   onPrint,
   exportDisabled = false,
@@ -75,27 +45,23 @@ export function AppHeader({
   exportError,
   recallId,
   severity,
+  theme,
+  onToggleTheme,
 }: AppHeaderProps) {
   const [copyState, setCopyState] = useState<CopyState>('idle');
-  const [downloaded, setDownloaded] = useState<DownloadKind | null>(null);
+  const [downloaded, setDownloaded] = useState<'html' | 'json' | null>(null);
   const copyTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const downloadTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   useEffect(() => {
     return () => {
-      if (copyTimerRef.current) {
-        clearTimeout(copyTimerRef.current);
-      }
-      if (downloadTimerRef.current) {
-        clearTimeout(downloadTimerRef.current);
-      }
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      if (downloadTimerRef.current) clearTimeout(downloadTimerRef.current);
     };
   }, []);
 
   const handleCopy = useCallback(async () => {
-    if (copyTimerRef.current) {
-      clearTimeout(copyTimerRef.current);
-    }
+    if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
     try {
       await onCopyHtml();
       setCopyState('copied');
@@ -105,113 +71,75 @@ export function AppHeader({
     copyTimerRef.current = setTimeout(() => setCopyState('idle'), 2000);
   }, [onCopyHtml]);
 
-  const flashDownloaded = useCallback((kind: DownloadKind, run: () => boolean) => {
+  const flashDownloaded = useCallback((kind: 'html' | 'json', run: () => boolean) => {
     if (!run()) return;
-    if (downloadTimerRef.current) {
-      clearTimeout(downloadTimerRef.current);
-    }
+    if (downloadTimerRef.current) clearTimeout(downloadTimerRef.current);
     setDownloaded(kind);
     downloadTimerRef.current = setTimeout(() => setDownloaded(null), 2000);
   }, []);
 
-  const CopyIcon =
-    copyState === 'copied' ? Check : copyState === 'failed' ? AlertTriangle : Copy;
+  const copyLabel =
+    copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy HTML';
 
   return (
     <header className={styles.header}>
       <div className={styles.brand}>
-        <div className={styles.mark} aria-hidden="true">RK</div>
         <span className={styles.brandName}>RecallKit</span>
+        <span className={styles.tagline}>Recall communication studio</span>
       </div>
+
       {recallId && (
-        <>
-          <div className={styles.rule} aria-hidden="true" />
-          <div className={styles.casePlate}>
-            <span className={styles.caseLabel}>Recall case</span>
-            <span className={styles.caseId} title={recallId}>{recallId}</span>
-          </div>
+        <div className={styles.meta}>
+          <span className={styles.caseId}>{recallId}</span>
           {severity && (
-            <span
-              className={`${styles.severityChip} ${severityTone[severity]}`}
-              title={`Severity: ${severity}`}
-            >
-              <span className={styles.severityDot} aria-hidden="true" />
-              {severity}
-            </span>
+            <span className={`${styles.severity} ${severityTone[severity]}`}>{severity}</span>
           )}
-        </>
+        </div>
       )}
+
       <div className={styles.spacer} />
+
       <span
         className={exportError ? styles.exportError : styles.srOnly}
         role="status"
       >
         {exportError ?? ''}
       </span>
+
       <StatusBadge variant={status}>{statusText[status]}</StatusBadge>
+
       <div className={styles.actions}>
         <button
           type="button"
-          className={`${styles.btn} ${styles.copyBtn} ${copyState === 'copied' ? styles.copySuccess : ''} ${copyState === 'failed' ? styles.copyFailure : ''}`}
+          className={styles.btn}
+          onClick={onToggleTheme}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark' ? 'Light' : 'Dark'}
+        </button>
+        <button
+          type="button"
+          className={`${styles.btn} ${copyState === 'copied' ? styles.success : ''} ${copyState === 'failed' ? styles.failure : ''}`}
           onClick={() => void handleCopy()}
           disabled={exportDisabled}
-          aria-label={copyLabel[copyState]}
-          title={exportDisabled ? 'Fix invalid fields to enable export' : 'Copy HTML'}
         >
-          <CopyIcon size={15} aria-hidden="true" />
-          <span className={styles.btnLabel}>{copyText[copyState]}</span>
+          {copyLabel}
         </button>
-        <span className={styles.srOnly} aria-live="polite">
-          {copyState !== 'idle'
-            ? copyLabel[copyState]
-            : downloaded
-              ? downloadedLabel[downloaded]
-              : ''}
-        </span>
         <button
           type="button"
-          className={`${styles.btn} ${downloaded === 'html' ? styles.copySuccess : ''}`}
+          className={`${styles.btn} ${downloaded === 'html' ? styles.success : ''}`}
           onClick={() => flashDownloaded('html', onExportHtml)}
           disabled={exportDisabled}
-          aria-label="Download HTML"
-          title={exportDisabled ? 'Fix invalid fields to enable export' : 'Download HTML'}
         >
-          {downloaded === 'html' ? (
-            <Check size={15} aria-hidden="true" />
-          ) : (
-            <Download size={15} aria-hidden="true" />
-          )}
-          <span className={styles.btnLabel}>HTML</span>
+          {downloaded === 'html' ? 'Downloaded' : 'HTML'}
         </button>
         <button
           type="button"
-          className={`${styles.btn} ${downloaded === 'json' ? styles.copySuccess : ''}`}
+          className={`${styles.btn} ${downloaded === 'json' ? styles.success : ''}`}
           onClick={() => flashDownloaded('json', onExportJson)}
           disabled={exportDisabled}
-          aria-label="Download JSON"
-          title={exportDisabled ? 'Fix invalid fields to enable export' : 'Download JSON'}
         >
-          {downloaded === 'json' ? (
-            <Check size={15} aria-hidden="true" />
-          ) : (
-            <FileText size={15} aria-hidden="true" />
-          )}
-          <span className={styles.btnLabel}>JSON</span>
-        </button>
-        <button
-          type="button"
-          className={`${styles.btn} ${downloaded === 'case' ? styles.copySuccess : ''}`}
-          onClick={() => flashDownloaded('case', onExportCase)}
-          disabled={exportDisabled}
-          aria-label="Export Case"
-          title={exportDisabled ? 'Fix invalid fields to enable export' : 'Export Case'}
-        >
-          {downloaded === 'case' ? (
-            <Check size={15} aria-hidden="true" />
-          ) : (
-            <Briefcase size={15} aria-hidden="true" />
-          )}
-          <span className={styles.btnLabel}>Case</span>
+          {downloaded === 'json' ? 'Downloaded' : 'JSON'}
         </button>
         {activeOutput === 'document' && (
           <button
@@ -219,23 +147,12 @@ export function AppHeader({
             className={styles.btn}
             onClick={onPrint}
             disabled={exportDisabled}
-            aria-label="Print"
-            title={exportDisabled ? 'Fix invalid fields to enable export' : 'Print'}
           >
-            <Printer size={15} aria-hidden="true" />
-            <span className={styles.btnLabel}>Print</span>
+            Print
           </button>
         )}
-        <div className={styles.actionRule} aria-hidden="true" />
-        <button
-          type="button"
-          className={`${styles.btn} ${styles.resetBtn}`}
-          onClick={onReset}
-          aria-label="Reset to sample"
-          title="Reset to sample"
-        >
-          <RotateCcw size={15} aria-hidden="true" />
-          <span className={styles.btnLabel}>Reset</span>
+        <button type="button" className={`${styles.btn} ${styles.resetBtn}`} onClick={onReset}>
+          Reset
         </button>
       </div>
     </header>
