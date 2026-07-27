@@ -1,8 +1,7 @@
 .shell {
   display: grid;
   grid-template-rows: auto 1fr;
-  height: 100svh;
-  overflow: hidden;
+  min-height: 100vh;
   background: var(--surface-0);
 }
 
