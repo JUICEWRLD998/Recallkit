@@ -9,7 +9,7 @@ import {
   Divider,
   ColumnLayouts,
 } from '@unlayer/react-elements'
-import defaultProductImageUrl from '../../assets/hero.png?inline'
+import defaultProductImageUrl from '../../assets/powerbank.jpg?inline'
 import type { RecallIncident } from '../../domain/recall-schema'
 import {
   formatDate,
@@ -87,7 +87,9 @@ function safeHttpUrl(value: string): string {
 
 function resolveProductImageUrl(value: string): string {
   const trimmed = value.trim()
-  if (!trimmed || trimmed === '/assets/hero.png') return defaultProductImageUrl
+  if (!trimmed || trimmed === '/powerbank.jpg' || trimmed === '/assets/hero.png') {
+    return defaultProductImageUrl
+  }
   if (trimmed.startsWith('data:image/')) return trimmed
   return safeHttpUrl(trimmed) === '#' ? defaultProductImageUrl : trimmed
 }

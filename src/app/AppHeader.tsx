@@ -130,8 +130,9 @@ export function AppHeader({
           className={`${styles.btn} ${downloaded === 'html' ? styles.success : ''}`}
           onClick={() => flashDownloaded('html', onExportHtml)}
           disabled={exportDisabled}
+          aria-label={`Download ${activeOutput} template as HTML`}
         >
-          {downloaded === 'html' ? 'Downloaded' : 'HTML'}
+          {downloaded === 'html' ? 'Downloaded' : 'Download Template'}
         </button>
         <button
           type="button"

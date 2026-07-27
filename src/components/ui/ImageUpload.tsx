@@ -12,7 +12,7 @@ interface ImageUploadProps {
 
 function isDisplayableImage(value: string): boolean {
   const trimmed = value.trim();
-  return trimmed.startsWith('data:image/') || /^https?:\/\//.test(trimmed);
+  return trimmed.startsWith('data:image/') || /^https?:\/\//.test(trimmed) || /^\/(?!\/)/.test(trimmed);
 }
 
 export function ImageUpload({ value, onChange, id }: ImageUploadProps) {
