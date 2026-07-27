@@ -51,6 +51,10 @@ Its Elements root is `<Email>`, so rows and columns render as email-safe, table-
 
 Source: [`src/templates/email/CustomerRecallEmail.tsx`](./src/templates/email/CustomerRecallEmail.tsx)
 
+[![Customer Recall Email template preview](./public/template-screenshots/recallkit-email-template.png)](./public/template-screenshots/recallkit-email-template.png)
+
+_Customer Recall Email — click the preview to open the full-resolution screenshot._
+
 ### Retailer Action Bulletin
 
 The bulletin is a print-oriented operational document. It includes a high-visibility recall identifier, product and batch details, a quarantine checklist, inventory disposition instructions, escalation triggers and contacts, and acknowledgement fields for staff.
@@ -58,6 +62,10 @@ The bulletin is a print-oriented operational document. It includes a high-visibi
 Its Elements root is `<Document>`. RecallKit adds print-specific CSS after rendering to improve A4/Letter presentation, preserve colors, and reduce awkward page breaks. Selecting **Print** opens the browser print workflow, where the bulletin can also be saved as a PDF.
 
 Sources: [`src/templates/document/RetailerActionBulletin.tsx`](./src/templates/document/RetailerActionBulletin.tsx) and [`src/templates/document/render-retailer-bulletin.ts`](./src/templates/document/render-retailer-bulletin.ts)
+
+[![Retailer Action Bulletin template preview](./public/template-screenshots/recallkit-bulletin-template.png)](./public/template-screenshots/recallkit-bulletin-template.png)
+
+_Retailer Action Bulletin — click the preview to open the full-resolution screenshot._
 
 ### Public Recall Notice
 
@@ -67,17 +75,11 @@ Its Elements root is `<Page>`, which produces responsive web HTML using web-orie
 
 Source: [`src/templates/web/PublicRecallNotice.tsx`](./src/templates/web/PublicRecallNotice.tsx)
 
-## Download the templates
+[![Public Recall Notice template preview](./public/template-screenshots/recallkit-web-template.png)](./public/template-screenshots/recallkit-web-template.png)
 
-The public download links will be added here when they are available.
+_Public Recall Notice — click the preview to open the full-resolution screenshot._
 
-| Template | HTML download | JSON download |
-| --- | --- | --- |
-| Customer Recall Email | _Link coming soon_ | _Link coming soon_ |
-| Retailer Action Bulletin | _Link coming soon_ | _Link coming soon_ |
-| Public Recall Notice | _Link coming soon_ | _Link coming soon_ |
 
-The HTML files are complete, standalone documents that can be opened directly in a browser. The JSON files contain Unlayer-compatible design data for continued editing or integration into an Unlayer workflow.
 
 ## How Unlayer Elements is used
 
@@ -328,10 +330,6 @@ The test suite covers the shared recall schema and validation, reducer behavior,
 
 When editing Elements templates, preserve the required root → row → column → content hierarchy and keep each row's number of columns aligned with its `ColumnLayouts` value.
 
-## Additional documentation
-
-- [`implementation.md`](./implementation.md) — product goals, UX direction, template specifications, architecture, phases, and testing plan
-- [`docs/phase-0-notes.md`](./docs/phase-0-notes.md) — initial Elements API and rendering verification notes
 
 ## License
 
